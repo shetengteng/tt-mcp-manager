@@ -1,0 +1,109 @@
+# Cursor Rules for tt-paikebao Project
+
+## 执行脚本
+---
+description:
+globs:
+alwaysApply:true
+---
+
+注意！！！每次对话需要执行脚本，每次执行完成，需要执行脚本询问下一步动作
+### ✅ Task: Interactive Task Loop with User Feedback
+
+1.**Checkif`userinput.py`exists**intherootdirectory.
+
+   *Ifitdoesn'texist,create it with the following content:
+
+     ```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+交互式用户输入脚本
+Usage:
+    python userinput.py # 自动检测prompts.txt，如不存在则进入交互模式
+"""
+
+import os
+
+def read_prompts_file(filename='prompts.txt'):
+    """读取prompts文件并返回所有内容"""
+    if not os.path.exists(filename):
+        return None
+    
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+            if content:
+                return content
+    except Exception as e:
+        print(f"读取文件 {filename} 时出错: {e}")
+    
+    return None
+
+
+def main():
+    """主函数"""
+      
+    # 默认行为：检测prompts.txt
+    content = read_prompts_file()
+    if content:
+        print("发现 prompts.txt 文件，内容如下:")
+        print("=" * 60)
+        print(content)
+        print("=" * 60)
+        print("\n任务完成！")
+    else:
+        print("未发现 prompts.txt 文件，进入交互模式...")
+        return
+
+if __name__ == "__main__":
+    main() 
+     ```
+
+2. **Main Workflow**:
+
+   * Perform your assigned tasks.
+
+   * Run:
+
+     ```bash
+     python userinput.py
+     ```
+   * The terminal should be opened in the chat window itself.
+
+   * Read the user's input.
+
+   * Based on the input, perform the next set of tasks.
+
+   * Repeat the process.
+
+3. **Exit Condition**:
+
+   * If the user enters `"stop"`whenprompted,exittheloopandterminatethe process.
+
+## 编程语言规则
+- 主要使用 Vue 3 组合式 API 
+- 样式使用 SCSS
+
+## 注释规则 (Critical - MUST Follow)
+- **强制使用中文注释**: 所有代码注释必须使用中文
+- **使用简单注释**: 优先使用简单的行注释 `// 注释内容`
+- **函数注释**: 每个函数/方法必须有中文注释说明其功能
+- **复杂逻辑注释**: 复杂的业务逻辑必须添加详细的中文注释
+- **组件注释**: Vue 组件需要在顶部添加中文描述注释
+- **变量注释**: 重要的变量需要添加中文说明注释
+
+## 代码风格
+- 使用 2 空格缩进
+- 字符串优先使用单引号
+- 对象和数组末尾保留尾随逗号
+- 变量名使用 camelCase 驼峰命名
+
+## 控制流程规则 (Critical - MUST Follow)
+- **优先使用卫语句**: 对于 if-else 判断，优先使用卫语句模式来减少嵌套
+- **早期返回**: 在函数开始处检查错误条件并提早返回，避免深层嵌套
+- **减少嵌套**: 使用 `if (!condition) return` 替代 `if (condition) { ... }`
+- **提高可读性**: 卫语句让主要逻辑更清晰，异常情况处理更明显
+
+遵循以上规则，确保代码质量和可维护性。

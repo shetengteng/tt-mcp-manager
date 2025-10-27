@@ -1,0 +1,473 @@
+---
+description: Electron、Vue 3 和 Shadcn 编程规范
+globs: *.vue,*.ts,*.js,*.tsx,*.jsx
+alwaysApply: true
+---
+
+# Electron、Vue 3 和 Shadcn 编程规范
+
+## Vue 3 组合式 API 规范
+
+### 基础规范
+- **使用组合式 API**: 统一使用 `<script setup>` 语法
+- **响应式数据**: 优先使用 `ref()` 和 `reactive()`
+- **生命周期**: 使用 `onMounted()`, `onUnmounted()` 等组合式 API 生命周期钩子
+- **计算属性**: 使用 `computed()` 定义计算属性
+- **监听器**: 使用 `watch()` 或 `watchEffect()` 进行数据监听
+
+### 组件结构顺序
+```vue
+<script setup lang="ts">
+// 1. 导入依赖
+import { ref, computed, onMounted } from 'vue'
+
+// 2. 定义 Props
+const props = defineProps<{
+  title: string
+}>()
+
+// 3. 定义 Emits
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+
+// 4. 响应式数据
+const count = ref(0)
+
+// 5. 计算属性
+const doubleCount = computed(() => count.value * 2)
+
+// 6. 方法
+const handleClick = () => {
+  count.value++
+}
+
+// 7. 生命周期钩子
+onMounted(() => {
+  // 初始化逻辑
+})
+
+// 8. 暴露给模板的内容（如需要）
+defineExpose({
+  count,
+})
+</script>
+
+<template>
+  <!-- 模板内容 -->
+</template>
+
+<style scoped lang="scss">
+/* 样式内容 */
+</style>
+```
+
+### Composables 规范
+- **命名**: 使用 `use` 前缀，如 `useUser()`, `useAuth()`
+- **文件位置**: 存放在 `src/composables/` 目录
+- **返回值**: 返回包含响应式数据和方法的对象
+- **清理**: 在 `onUnmounted` 中清理副作用
+
+```typescript
+// composables/useCounter.ts
+import { ref, onUnmounted } from 'vue'
+
+export function useCounter(initialValue = 0) {
+  // 响应式状态
+  const count = ref(initialValue)
+  
+  // 方法
+  const increment = () => count.value++
+  const decrement = () => count.value--
+  
+  // 清理逻辑
+  onUnmounted(() => {
+    // 清理副作用
+  })
+  
+  // 返回状态和方法
+  return {
+    count,
+    increment,
+    decrement,
+  }
+}
+```
+
+## Electron 规范
+
+### 进程通信 (IPC)
+- **主进程到渲染进程**: 使用 `webContents.send()`
+- **渲染进程到主进程**: 使用 `ipcRenderer.invoke()` (推荐) 或 `ipcRenderer.send()`
+- **安全性**: 始终使用 `contextBridge` 暴露 API，不要直接暴露 `ipcRenderer`
+
+```typescript
+// preload.ts
+import { contextBridge, ipcRenderer } from 'electron'
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  // 双向通信（推荐）
+  invoke: (channel: string, ...args: any[]) => ipcRenderer.invoke(channel, ...args),
+  
+  // 单向通信
+  send: (channel: string, ...args: any[]) => ipcRenderer.send(channel, ...args),
+  
+  // 监听主进程消息
+  on: (channel: string, callback: Function) => {
+    const subscription = (_event: any, ...args: any[]) => callback(...args)
+    ipcRenderer.on(channel, subscription)
+    
+    // 返回取消订阅函数
+    return () => {
+      ipcRenderer.removeListener(channel, subscription)
+    }
+  },
+})
+```
+
+### 主进程规范
+- **IPC 处理**: 使用 `ipcMain.handle()` 处理异步请求
+- **窗口管理**: 统一管理窗口实例，避免内存泄漏
+- **错误处理**: 捕获并处理所有异步错误
+- **日志**: 使用统一的日志系统
+
+```typescript
+// main/index.ts
+import { app, BrowserWindow, ipcMain } from 'electron'
+
+// 创建窗口
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: false, // 安全性：禁用 node 集成
+      contextIsolation: true,  // 安全性：启用上下文隔离
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  })
+  
+  return win
+}
+
+// IPC 处理器
+ipcMain.handle('get-app-version', async () => {
+  return app.getVersion()
+})
+
+ipcMain.handle('read-file', async (_event, filePath: string) => {
+  try {
+    const content = await fs.readFile(filePath, 'utf-8')
+    return { success: true, data: content }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+})
+```
+
+### 渲染进程规范
+- **类型安全**: 为 `window.electronAPI` 定义 TypeScript 类型
+- **错误处理**: 处理所有 IPC 调用的错误情况
+- **取消订阅**: 组件卸载时取消所有事件监听
+
+```typescript
+// types/electron.d.ts
+export interface ElectronAPI {
+  invoke: (channel: string, ...args: any[]) => Promise<any>
+  send: (channel: string, ...args: any[]) => void
+  on: (channel: string, callback: Function) => () => void
+}
+
+declare global {
+  interface Window {
+    electronAPI: ElectronAPI
+  }
+}
+```
+
+```vue
+<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
+
+// 调用主进程 API
+const getAppVersion = async () => {
+  try {
+    const version = await window.electronAPI.invoke('get-app-version')
+    console.log('App version:', version)
+  } catch (error) {
+    console.error('获取版本失败:', error)
+  }
+}
+
+// 监听主进程消息
+let unsubscribe: (() => void) | null = null
+
+onMounted(() => {
+  unsubscribe = window.electronAPI.on('update-available', (version: string) => {
+    console.log('新版本可用:', version)
+  })
+})
+
+// 清理监听器
+onUnmounted(() => {
+  if (unsubscribe) {
+    unsubscribe()
+  }
+})
+</script>
+```
+
+## Shadcn Vue 规范
+
+### 组件使用
+- **导入**: 从 `@/components/ui` 导入 Shadcn 组件
+- **样式覆盖**: 使用 Tailwind CSS 类进行样式自定义
+- **主题**: 通过 CSS 变量定制主题色
+- **组合**: 组合多个基础组件构建复杂 UI
+
+### 组件安装
+```bash
+# 安装单个组件
+npx shadcn-vue@latest add button
+
+# 安装多个组件
+npx shadcn-vue@latest add button card dialog
+```
+
+### 组件使用示例
+```vue
+<script setup lang="ts">
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+
+// 组件逻辑
+const handleClick = () => {
+  console.log('按钮被点击')
+}
+</script>
+
+<template>
+  <Card>
+    <CardHeader>
+      <CardTitle>卡片标题</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p>卡片内容</p>
+      <Button @click="handleClick" variant="default">
+        点击按钮
+      </Button>
+    </CardContent>
+  </Card>
+  
+  <Dialog>
+    <DialogTrigger as-child>
+      <Button variant="outline">打开对话框</Button>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>对话框标题</DialogTitle>
+      </DialogHeader>
+      <p>对话框内容</p>
+    </DialogContent>
+  </Dialog>
+</template>
+```
+
+### 表单处理
+- **验证**: 使用 `vee-validate` 或 `@vuelidate/core` 进行表单验证
+- **组件**: 使用 Shadcn 的 Form 组件配合验证库
+- **错误提示**: 显示清晰的错误消息
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useForm } from 'vee-validate'
+import * as z from 'zod'
+
+// 定义表单 schema
+const formSchema = z.object({
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(6, '密码至少 6 个字符'),
+})
+
+// 使用表单
+const { handleSubmit, errors, defineField } = useForm({
+  validationSchema: formSchema,
+})
+
+const [email] = defineField('email')
+const [password] = defineField('password')
+
+// 提交处理
+const onSubmit = handleSubmit((values) => {
+  console.log('表单提交:', values)
+})
+</script>
+
+<template>
+  <form @submit="onSubmit" class="space-y-4">
+    <div>
+      <Label for="email">邮箱</Label>
+      <Input
+        id="email"
+        v-model="email"
+        type="email"
+        placeholder="请输入邮箱"
+      />
+      <p v-if="errors.email" class="text-sm text-red-500">
+        {{ errors.email }}
+      </p>
+    </div>
+    
+    <div>
+      <Label for="password">密码</Label>
+      <Input
+        id="password"
+        v-model="password"
+        type="password"
+        placeholder="请输入密码"
+      />
+      <p v-if="errors.password" class="text-sm text-red-500">
+        {{ errors.password }}
+      </p>
+    </div>
+    
+    <Button type="submit">提交</Button>
+  </form>
+</template>
+```
+
+### 主题定制
+在 `src/assets/index.css` 中定制主题：
+
+```css
+@layer base {
+  :root {
+    /* 主题色 */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    /* 边框和其他颜色 */
+    --border: 214.3 31.8% 91.4%;
+    --radius: 0.5rem;
+  }
+  
+  .dark {
+    /* 暗色主题 */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+  }
+}
+```
+
+## 项目结构规范
+
+```
+src/
+├── main/              # Electron 主进程
+│   ├── index.ts       # 主进程入口
+│   ├── ipc/           # IPC 处理器
+│   └── windows/       # 窗口管理
+├── preload/           # Preload 脚本
+│   └── index.ts
+├── renderer/          # 渲染进程 (Vue 应用)
+│   ├── src/
+│   │   ├── components/    # Vue 组件
+│   │   │   ├── ui/        # Shadcn 组件
+│   │   │   └── ...
+│   │   ├── composables/   # 组合式函数
+│   │   ├── views/         # 页面视图
+│   │   ├── router/        # 路由配置
+│   │   ├── stores/        # Pinia 状态管理
+│   │   ├── utils/         # 工具函数
+│   │   ├── types/         # TypeScript 类型
+│   │   ├── assets/        # 静态资源
+│   │   ├── App.vue        # 根组件
+│   │   └── main.ts        # 渲染进程入口
+```
+
+## 最佳实践
+
+### 性能优化
+- **懒加载**: 路由和组件使用懒加载
+- **虚拟滚动**: 大列表使用虚拟滚动
+- **防抖节流**: 频繁操作使用防抖和节流
+- **图片优化**: 使用适当的图片格式和大小
+
+### 安全性
+- **内容安全策略**: 配置 CSP
+- **上下文隔离**: 启用 Electron 的上下文隔离
+- **Node 集成**: 禁用渲染进程的 Node 集成
+- **输入验证**: 验证所有用户输入
+
+### 测试
+- **单元测试**: 使用 Vitest 测试组合式函数和工具函数
+- **组件测试**: 使用 @vue/test-utils 测试 Vue 组件
+- **E2E 测试**: 使用 Playwright 或 Spectron 进行端到端测试
+
+### 错误处理
+- **全局错误处理**: 在 Vue 和 Electron 中设置全局错误处理器
+- **错误边界**: 使用错误边界组件捕获组件错误
+- **日志记录**: 记录所有错误到文件或远程服务
+
+```typescript
+// Vue 全局错误处理
+app.config.errorHandler = (err, instance, info) => {
+  console.error('Vue 错误:', err)
+  console.error('错误信息:', info)
+}
+
+// Electron 主进程错误处理
+process.on('uncaughtException', (error) => {
+  console.error('未捕获的异常:', error)
+})
+
+process.on('unhandledRejection', (reason) => {
+  console.error('未处理的 Promise 拒绝:', reason)
+})
+```
+
+## 代码审查检查清单
+
+### Vue 组件
+- [ ] 使用 `<script setup>` 语法
+- [ ] Props 和 Emits 有类型定义
+- [ ] 组件有中文注释说明功能
+- [ ] 使用卫语句减少嵌套
+- [ ] 样式使用 scoped 避免污染
+
+### Electron
+- [ ] 使用 contextBridge 安全暴露 API
+- [ ] 禁用 nodeIntegration
+- [ ] 启用 contextIsolation
+- [ ] IPC 通信有错误处理
+- [ ] 组件卸载时清理事件监听
+
+### Shadcn
+- [ ] 从 `@/components/ui` 正确导入组件
+- [ ] 表单有适当的验证
+- [ ] 遵循 Shadcn 的组件组合模式
+- [ ] 样式自定义使用 Tailwind 类
+
+### 通用
+- [ ] 所有注释使用中文
+- [ ] 使用 2 空格缩进
+- [ ] 复杂逻辑有详细注释
+- [ ] 无 TypeScript 类型错误
+- [ ] 无 ESLint 警告或错误
