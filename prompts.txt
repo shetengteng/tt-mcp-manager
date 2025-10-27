@@ -1,1 +1,0 @@
-.cursor/rules 和 .cursorrules的区别在哪里
