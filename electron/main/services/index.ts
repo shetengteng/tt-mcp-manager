@@ -3,6 +3,7 @@ import { ConfigManager } from './config-manager'
 import { LogManager } from './log-manager'
 import { MarketplaceService } from './marketplace-service'
 import { TemplateManager } from './template-manager'
+import { SettingsManager } from './settings-manager'
 
 // 创建服务实例
 export const processManager = new ProcessManager()
@@ -10,6 +11,7 @@ export const configManager = new ConfigManager()
 export const logManager = new LogManager()
 export const marketplaceService = new MarketplaceService()
 export const templateManager = new TemplateManager()
+export const settingsManager = new SettingsManager()
 
 // 初始化所有服务
 export async function initializeServices(): Promise<void> {
@@ -27,6 +29,10 @@ export async function initializeServices(): Promise<void> {
   await templateManager.initialize()
   console.log('✓ 模板管理器初始化完成')
   
+  // 初始化设置管理器
+  await settingsManager.initialize()
+  console.log('✓ 设置管理器初始化完成')
+  
   // 连接进程管理器和日志管理器
   processManager.on('log:new', (logEntry) => {
     logManager.addLog(
@@ -41,5 +47,5 @@ export async function initializeServices(): Promise<void> {
 }
 
 // 导出服务类型
-export { ProcessManager, ConfigManager, LogManager, MarketplaceService, TemplateManager }
+export { ProcessManager, ConfigManager, LogManager, MarketplaceService, TemplateManager, SettingsManager }
 

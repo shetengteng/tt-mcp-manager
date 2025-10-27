@@ -1,17 +1,56 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted } from 'vue'
+import { useSettingsStore } from '@/stores/settings'
+import { useToast } from '@/components/ui/toast/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { FolderOpen } from 'lucide-vue-next'
 
-// 响应式状态
-const autoStart = ref(false)
-const minimizeToTray = ref(false)
-const keepBackground = ref(false)
-const githubToken = ref('')
+const settingsStore = useSettingsStore()
+const { toast } = useToast()
+
+onMounted(async () => {
+  await settingsStore.loadSettings()
+})
+
+async function handleSaveSettings() {
+  try {
+    await settingsStore.updateSettings(settingsStore.settings)
+    toast({
+      title: '保存成功',
+      description: '设置已成功保存',
+    })
+  } catch (error: any) {
+    toast({
+      title: '保存失败',
+      description: error.message || '保存设置时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
+async function handleSelectFolder() {
+  try {
+    const result = await window.electronAPI.settings.selectFolder()
+    if (result.success && result.path) {
+      settingsStore.settings.defaultInstallPath = result.path
+      toast({
+        title: '文件夹已选择',
+        description: result.path,
+      })
+    }
+  } catch (error: any) {
+    toast({
+      title: '选择失败',
+      description: error.message || '选择文件夹时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
 </script>
 
 <template>
@@ -31,7 +70,7 @@ const githubToken = ref('')
                 系统启动时自动运行 MCP Manager
               </p>
             </div>
-            <Switch id="auto-start" v-model:checked="autoStart" />
+            <Switch id="auto-start" v-model:checked="settingsStore.settings.autoStart" />
           </div>
           
           <Separator />
@@ -43,7 +82,7 @@ const githubToken = ref('')
                 点击最小化按钮时隐藏到系统托盘
               </p>
             </div>
-            <Switch id="minimize-tray" v-model:checked="minimizeToTray" />
+            <Switch id="minimize-tray" v-model:checked="settingsStore.settings.minimizeToTray" />
           </div>
           
           <Separator />
@@ -55,9 +94,42 @@ const githubToken = ref('')
                 关闭窗口时不退出应用，保持服务器运行
               </p>
             </div>
-            <Switch id="keep-background" v-model:checked="keepBackground" />
+            <Switch id="keep-background" v-model:checked="settingsStore.settings.keepBackground" />
           </div>
         </CardContent>
+        <CardFooter>
+          <Button @click="handleSaveSettings">保存设置</Button>
+        </CardFooter>
+      </Card>
+
+      <!-- 安装设置 -->
+      <Card>
+        <CardHeader>
+          <CardTitle>安装设置</CardTitle>
+          <CardDescription>配置 MCP Server 的默认安装路径</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="space-y-2">
+            <Label for="install-path">默认安装路径</Label>
+            <div class="flex gap-2">
+              <Input
+                id="install-path"
+                v-model="settingsStore.settings.defaultInstallPath"
+                placeholder="例如: ~/mcp-servers"
+                class="flex-1"
+              />
+              <Button variant="outline" size="icon" @click="handleSelectFolder">
+                <FolderOpen class="h-4 w-4" />
+              </Button>
+            </div>
+            <p class="text-xs text-muted-foreground">
+              新安装的 MCP Server 将默认放置在此目录下。可以使用 ~ 表示用户主目录
+            </p>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button @click="handleSaveSettings">保存设置</Button>
+        </CardFooter>
       </Card>
 
       <!-- API 设置 -->
@@ -71,7 +143,7 @@ const githubToken = ref('')
             <Label for="github-token">GitHub Personal Access Token (可选)</Label>
             <Input
               id="github-token"
-              v-model="githubToken"
+              v-model="settingsStore.settings.githubToken"
               type="password"
               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
             />
@@ -81,7 +153,7 @@ const githubToken = ref('')
           </div>
         </CardContent>
         <CardFooter>
-          <Button>保存设置</Button>
+          <Button @click="handleSaveSettings">保存设置</Button>
         </CardFooter>
       </Card>
 

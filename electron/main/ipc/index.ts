@@ -3,6 +3,7 @@ import { setupLogIpc } from './log-ipc'
 import { setupMarketplaceIpc } from './marketplace-ipc'
 import { setupConfigIpc } from './config-ipc'
 import { setupTemplateIpc } from './template-ipc'
+import { setupSettingsIpc } from './settings-ipc'
 
 /**
  * 设置所有 IPC 处理器
@@ -15,6 +16,7 @@ export function setupIpcHandlers(): void {
   setupMarketplaceIpc()
   setupConfigIpc()
   setupTemplateIpc()
+  setupSettingsIpc()
   
   console.log('✓ 所有 IPC 处理器设置完成')
 }

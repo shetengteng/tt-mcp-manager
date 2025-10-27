@@ -64,7 +64,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 应用设置
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
-    update: (settings: any) => ipcRenderer.invoke('settings:update', settings)
+    update: (settings: any) => ipcRenderer.invoke('settings:update', settings),
+    selectFolder: () => ipcRenderer.invoke('settings:selectFolder')
   }
 })
 

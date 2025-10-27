@@ -113,7 +113,6 @@ const navigateTo = (path: string) => {
       <!-- 顶部导航栏 -->
       <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6">
         <SidebarTrigger />
-        <Separator orientation="vertical" class="h-6" />
         <div class="flex flex-1 items-center justify-between">
           <h1 class="text-lg font-semibold">
             {{ menuItems.find((item) => item.path === route.path)?.title || 'MCP Manager' }}
