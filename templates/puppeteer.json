@@ -1,0 +1,44 @@
+{
+  "name": "puppeteer",
+  "displayName": "Puppeteer 服务器",
+  "description": "提供浏览器自动化能力，支持网页截图、PDF 生成、表单填写等",
+  "category": "automation",
+  "version": "1.0.0",
+  "author": "MCP Community",
+  "tags": ["puppeteer", "browser", "automation", "scraping"],
+  "icon": "🎭",
+  "repository": "https://github.com/modelcontextprotocol/servers",
+  "config": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+    "env": {},
+    "cwd": null
+  },
+  "requirements": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "variables": [],
+  "features": [
+    "打开网页",
+    "截取屏幕",
+    "生成 PDF",
+    "填写表单",
+    "点击元素",
+    "获取页面内容"
+  ],
+  "permissions": [
+    {
+      "type": "network",
+      "scope": "*",
+      "description": "访问任意网站"
+    },
+    {
+      "type": "filesystem",
+      "scope": "write",
+      "description": "保存截图和 PDF 文件"
+    }
+  ],
+  "documentation": "https://pptr.dev/"
+}
+

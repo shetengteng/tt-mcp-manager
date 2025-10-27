@@ -1,0 +1,49 @@
+{
+  "name": "slack",
+  "displayName": "Slack 服务器",
+  "description": "提供 Slack API 访问能力，支持消息发送、频道管理等操作",
+  "category": "communication",
+  "version": "1.0.0",
+  "author": "MCP Community",
+  "tags": ["slack", "chat", "messaging", "communication"],
+  "icon": "💬",
+  "repository": "https://github.com/modelcontextprotocol/servers",
+  "config": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-slack"],
+    "env": {
+      "SLACK_BOT_TOKEN": "${slackToken}"
+    },
+    "cwd": null
+  },
+  "requirements": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "variables": [
+    {
+      "name": "slackToken",
+      "label": "Slack Bot Token",
+      "description": "Slack 机器人令牌（以 xoxb- 开头）",
+      "type": "password",
+      "required": true,
+      "default": ""
+    }
+  ],
+  "features": [
+    "发送消息",
+    "获取频道列表",
+    "获取用户信息",
+    "上传文件",
+    "管理频道成员"
+  ],
+  "permissions": [
+    {
+      "type": "network",
+      "scope": "slack.com",
+      "description": "访问 Slack API"
+    }
+  ],
+  "documentation": "https://api.slack.com/docs"
+}
+

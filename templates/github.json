@@ -1,0 +1,50 @@
+{
+  "name": "github",
+  "displayName": "GitHub 服务器",
+  "description": "提供 GitHub API 访问能力，支持仓库、Issue、PR 等操作",
+  "category": "development",
+  "version": "1.0.0",
+  "author": "MCP Official",
+  "tags": ["github", "git", "repository", "api"],
+  "icon": "🐙",
+  "repository": "https://github.com/modelcontextprotocol/servers",
+  "config": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_TOKEN": "${githubToken}"
+    },
+    "cwd": null
+  },
+  "requirements": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "variables": [
+    {
+      "name": "githubToken",
+      "label": "GitHub Personal Access Token",
+      "description": "用于访问 GitHub API 的个人访问令牌",
+      "type": "password",
+      "required": true,
+      "default": ""
+    }
+  ],
+  "features": [
+    "搜索仓库",
+    "获取仓库信息",
+    "创建/更新 Issue",
+    "创建/更新 Pull Request",
+    "获取文件内容",
+    "搜索代码"
+  ],
+  "permissions": [
+    {
+      "type": "network",
+      "scope": "github.com",
+      "description": "访问 GitHub API"
+    }
+  ],
+  "documentation": "https://github.com/modelcontextprotocol/servers/tree/main/src/github"
+}
+

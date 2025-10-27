@@ -1,0 +1,53 @@
+{
+  "name": "filesystem",
+  "displayName": "文件系统服务器",
+  "description": "提供本地文件系统的读写访问能力，支持文件和目录操作",
+  "category": "system",
+  "version": "1.0.0",
+  "author": "MCP Official",
+  "tags": ["filesystem", "file", "directory", "local"],
+  "icon": "📁",
+  "repository": "https://github.com/modelcontextprotocol/servers",
+  "config": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "${rootPath}"],
+    "env": {},
+    "cwd": null
+  },
+  "requirements": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "variables": [
+    {
+      "name": "rootPath",
+      "label": "根目录路径",
+      "description": "文件系统服务器可以访问的根目录路径",
+      "type": "path",
+      "required": true,
+      "default": ""
+    }
+  ],
+  "features": [
+    "读取文件内容",
+    "写入文件内容",
+    "创建目录",
+    "删除文件/目录",
+    "列出目录内容",
+    "搜索文件"
+  ],
+  "permissions": [
+    {
+      "type": "filesystem",
+      "scope": "read",
+      "description": "读取指定目录下的文件"
+    },
+    {
+      "type": "filesystem",
+      "scope": "write",
+      "description": "写入和修改指定目录下的文件"
+    }
+  ],
+  "documentation": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem"
+}
+

@@ -1,0 +1,47 @@
+{
+  "name": "postgres",
+  "displayName": "PostgreSQL 服务器",
+  "description": "提供 PostgreSQL 数据库的查询和操作能力",
+  "category": "database",
+  "version": "1.0.0",
+  "author": "MCP Official",
+  "tags": ["postgres", "postgresql", "database", "sql"],
+  "icon": "🐘",
+  "repository": "https://github.com/modelcontextprotocol/servers",
+  "config": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-postgres", "${connectionString}"],
+    "env": {},
+    "cwd": null
+  },
+  "requirements": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "variables": [
+    {
+      "name": "connectionString",
+      "label": "数据库连接字符串",
+      "description": "PostgreSQL 数据库的连接字符串（格式：postgresql://user:password@host:port/database）",
+      "type": "password",
+      "required": true,
+      "default": "postgresql://localhost:5432/mydb"
+    }
+  ],
+  "features": [
+    "执行 SQL 查询",
+    "获取表结构",
+    "列出所有表",
+    "执行事务",
+    "数据库备份"
+  ],
+  "permissions": [
+    {
+      "type": "network",
+      "scope": "database",
+      "description": "连接到 PostgreSQL 数据库"
+    }
+  ],
+  "documentation": "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres"
+}
+
