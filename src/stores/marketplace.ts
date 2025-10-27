@@ -67,7 +67,10 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
 
   async function install(item: MarketItem, config: any) {
     try {
-      const result = await window.electronAPI.marketplace.install(item, config)
+      // 转换为普通对象，避免响应式代理无法通过 IPC 传递
+      const plainItem = JSON.parse(JSON.stringify(item))
+      const plainConfig = JSON.parse(JSON.stringify(config))
+      const result = await window.electronAPI.marketplace.install(plainItem, plainConfig)
       if (!result.success) {
         throw new Error(result.error)
       }

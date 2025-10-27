@@ -55,6 +55,9 @@ const filteredTemplates = computed(() => {
 
 // 计算属性：所有分类
 const categories = computed(() => {
+  if (!Array.isArray(templates.value)) {
+    return ['all']
+  }
   const cats = new Set(templates.value.map((t) => t.category))
   return ['all', ...Array.from(cats)]
 })
@@ -77,7 +80,12 @@ const loadTemplates = async () => {
   loading.value = true
   try {
     const result = await window.electronAPI.template.getAll()
-    templates.value = result || []
+    // result 是 { success: true, data: [] } 格式
+    if (result && result.success && Array.isArray(result.data)) {
+      templates.value = result.data
+    } else {
+      templates.value = []
+    }
     console.log('已加载模板:', templates.value.length)
   } catch (error) {
     console.error('加载模板失败:', error)

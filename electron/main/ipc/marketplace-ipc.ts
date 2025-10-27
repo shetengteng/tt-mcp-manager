@@ -45,20 +45,36 @@ export function setupMarketplaceIpc(): void {
     try {
       console.log(`安装服务器: ${item.name} (${item.installType})`)
 
+      // 确保 installType 存在，如果不存在则根据 installCommand 推断
+      const installType = item.installType || (
+        item.npmPackage || item.installCommand?.includes('npx') ? 'npm' :
+        item.pythonPackage || item.installCommand?.includes('pip') ? 'python' :
+        'git'
+      )
+
+      // 确保工作目录存在
+      if (userConfig.workingDirectory) {
+        const workDir = userConfig.workingDirectory.replace(/^~/, require('os').homedir())
+        await require('fs').promises.mkdir(workDir, { recursive: true })
+        console.log(`已创建工作目录: ${workDir}`)
+      }
+
       // 根据类型安装
-      if (item.installType === 'npm' && item.npmPackage) {
-        await installNpmPackage(item.npmPackage)
-      } else if (item.installType === 'python' && item.pythonPackage) {
+      if (installType === 'npm' && item.npmPackage) {
+        // npx 不需要全局安装，跳过安装步骤
+        console.log(`使用 npx 运行，无需全局安装: ${item.npmPackage}`)
+        console.log(`服务器将在工作目录中运行: ${userConfig.workingDirectory}`)
+      } else if (installType === 'python' && item.pythonPackage) {
         await installPythonPackage(item.pythonPackage)
       }
 
       // 创建服务器配置
       const config = {
         id: generateId(),
-        name: userConfig.name || item.name,
-        type: item.installType,
-        command: getCommand(item),
-        args: getArgs(item, userConfig),
+        name: userConfig.name || item.displayName || item.name,
+        type: installType,
+        command: getCommand({ ...item, installType }),
+        args: getArgs({ ...item, installType }, userConfig),
         env: userConfig.env || {},
         workingDirectory: userConfig.workingDirectory,
         autoStart: false,
@@ -117,12 +133,19 @@ function getArgs(item: MarketItem, userConfig: any): string[] {
   const args: string[] = []
 
   if (item.installType === 'npm' && item.npmPackage) {
-    args.push(item.npmPackage)
+    // 对于 npx，添加 -y 参数自动确认，然后是包名
+    args.push('-y', item.npmPackage)
   } else if (item.installType === 'python' && item.pythonPackage) {
     args.push('-m', item.pythonPackage)
   }
 
-  // 添加用户配置的参数
+  // 添加工作目录作为参数（如果有）
+  // 例如 filesystem server 需要路径参数
+  if (userConfig.workingDirectory) {
+    args.push(userConfig.workingDirectory)
+  }
+
+  // 添加用户配置的其他参数
   if (userConfig.args && Array.isArray(userConfig.args)) {
     args.push(...userConfig.args)
   }

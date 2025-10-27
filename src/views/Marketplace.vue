@@ -313,7 +313,7 @@ function openExternal(url: string) {
               placeholder="服务器的工作目录"
             />
             <p class="text-xs text-muted-foreground">
-              服务器将在此目录中运行，可以使用 ~ 表示用户主目录
+              💡 服务器运行时的工作目录。对于 npx 包，程序本身由 npx 管理，此目录用于存放服务器产生的数据和配置文件。
             </p>
           </div>
 
@@ -329,10 +329,13 @@ function openExternal(url: string) {
           <div class="text-sm text-muted-foreground">
             <p>点击安装后，将执行以下操作：</p>
             <ul class="list-disc list-inside mt-2 space-y-1">
-              <li>安装必要的依赖包</li>
+              <li>创建工作目录（如果不存在）</li>
               <li>创建服务器配置</li>
               <li>添加到服务器列表</li>
             </ul>
+            <p class="mt-2 text-xs">
+              📦 注意：npx 包会在首次运行时自动下载，无需手动安装
+            </p>
           </div>
         </div>
 

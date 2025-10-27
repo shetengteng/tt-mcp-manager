@@ -123,7 +123,10 @@ async function handleSelectFolder() {
               </Button>
             </div>
             <p class="text-xs text-muted-foreground">
-              新安装的 MCP Server 将默认放置在此目录下。可以使用 ~ 表示用户主目录
+              新安装的 MCP Server 的默认工作目录基础路径。每个服务器会在此目录下创建子目录用于存放数据和配置。
+            </p>
+            <p class="text-xs text-muted-foreground mt-1">
+              💡 提示：可以使用 ~ 表示用户主目录（例如：~/mcp-servers）
             </p>
           </div>
         </CardContent>

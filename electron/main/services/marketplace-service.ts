@@ -47,6 +47,24 @@ export class MarketplaceService {
 
       const content = await fs.readFile(dataPath, 'utf-8')
       this.mcpServersData = JSON.parse(content)
+      
+      // 自动推断并设置 installType
+      if (this.mcpServersData?.servers) {
+        this.mcpServersData.servers = this.mcpServersData.servers.map(server => {
+          if (!server.installType) {
+            // 根据 npmPackage、pythonPackage 或 installCommand 推断类型
+            if (server.npmPackage || server.installCommand?.includes('npx')) {
+              server.installType = 'npm'
+            } else if (server.pythonPackage || server.installCommand?.includes('pip') || server.installCommand?.includes('python')) {
+              server.installType = 'python'
+            } else {
+              server.installType = 'git'
+            }
+          }
+          return server
+        })
+      }
+      
       console.log(`已加载 ${this.mcpServersData?.servers.length || 0} 个 MCP Servers`)
     } catch (error) {
       console.error('加载 MCP Servers 数据失败:', error)
