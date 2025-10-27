@@ -15,7 +15,7 @@ const githubToken = ref('')
 </script>
 
 <template>
-  <div class="h-full">
+  <div>
     <div class="max-w-4xl space-y-6">
       <!-- 常规设置 -->
       <Card>

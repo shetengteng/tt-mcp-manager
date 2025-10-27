@@ -104,7 +104,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="flex flex-col">
     <!-- 顶部工具栏 -->
     <div class="mb-6">
       <div class="flex items-center justify-between mb-4">

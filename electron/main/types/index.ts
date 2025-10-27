@@ -83,22 +83,26 @@ export interface SearchOptions {
 export interface MarketItem {
   id: number
   name: string
-  fullName: string
+  displayName: string
+  fullName?: string
   description: string
   stars: number
-  forks: number
+  forks?: number
   language: string
   topics: string[]
   githubUrl: string
   homepage?: string
   license?: string
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
   npmPackage?: string
   pythonPackage?: string
-  downloadCount: number
+  downloadCount?: number
   category: string[]
-  installType: 'npm' | 'python' | 'git'
+  installType?: 'npm' | 'python' | 'git'
+  installCommand: string
+  author: string
+  official: boolean
 }
 
 /**

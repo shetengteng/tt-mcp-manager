@@ -112,6 +112,27 @@ tt-mcp-manager/
 - **语言**: TypeScript
 - **API 服务**: Express + Socket.io
 
+## 文档
+
+### 设计文档
+- [项目概览](./docs/01-project-overview.md) - 项目介绍和功能特性
+- [技术架构](./docs/02-technical-architecture.md) - 技术栈和架构设计
+- [UI 原型](./docs/03-ui-prototype.md) - 界面设计和交互流程
+- [流程图](./docs/04-flow-diagrams.md) - 业务流程和数据流
+- [API 设计](./docs/05-api-design.md) - API 接口设计
+- [模板设计](./docs/06-template-design.md) - MCP Server 模板规范
+- [市场功能](./docs/07-marketplace.md) - 市场功能设计
+- [开发指南](./docs/08-development-guide.md) - 开发环境和规范
+
+### 进度文档
+- [项目进度](./docs/PROGRESS.md) - 开发进度追踪
+- [最新进度](./docs/PROGRESS_UPDATE.md) - 最新更新说明
+- [快速开始](./docs/GETTING_STARTED.md) - 快速上手指南
+
+### 技术文档
+- [Shadcn 迁移指南](./docs/SHADCN_MIGRATION.md) - Shadcn-Vue 组件迁移详解
+- [组件迁移总结](./docs/COMPONENT_MIGRATION_SUMMARY.md) - 组件迁移对比和示例
+
 ## License
 
 MIT

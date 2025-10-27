@@ -22,7 +22,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="flex flex-col">
     <!-- 统计卡片 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <Card>
@@ -74,7 +74,7 @@ onMounted(async () => {
     </Card>
 
     <!-- 服务器列表 -->
-    <Card class="flex-1">
+    <Card>
       <CardHeader>
         <CardTitle>服务器列表</CardTitle>
         <CardDescription>管理您的 MCP 服务器</CardDescription>

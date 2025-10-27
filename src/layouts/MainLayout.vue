@@ -68,7 +68,7 @@ const navigateTo = (path: string) => {
   <SidebarProvider>
     <Sidebar>
       <!-- 侧边栏头部 -->
-      <SidebarHeader class="border-b p-4">
+      <SidebarHeader class="p-4">
         <div class="flex items-center gap-2">
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <span class="text-lg font-bold">M</span>
@@ -101,7 +101,7 @@ const navigateTo = (path: string) => {
       </SidebarContent>
 
       <!-- 侧边栏底部 -->
-      <SidebarFooter class="border-t p-4">
+      <SidebarFooter class="p-4">
         <div class="flex items-center gap-2 text-sm text-muted-foreground">
           <span>版本 1.0.0</span>
         </div>
@@ -109,9 +109,9 @@ const navigateTo = (path: string) => {
     </Sidebar>
 
     <!-- 主内容区域 -->
-    <SidebarInset>
+    <SidebarInset class="flex flex-col h-screen">
       <!-- 顶部导航栏 -->
-      <header class="flex h-14 items-center gap-4 border-b bg-background px-6">
+      <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6">
         <SidebarTrigger />
         <Separator orientation="vertical" class="h-6" />
         <div class="flex flex-1 items-center justify-between">
@@ -125,7 +125,7 @@ const navigateTo = (path: string) => {
       </header>
 
       <!-- 页面内容 -->
-      <main class="flex-1 overflow-auto p-6">
+      <main class="flex-1 overflow-y-auto p-6">
         <router-view />
       </main>
     </SidebarInset>
