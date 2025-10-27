@@ -65,10 +65,21 @@ function handleSortChange(value: string) {
 }
 
 // 打开安装对话框
-function openInstallDialog(item: MarketItem) {
+async function openInstallDialog(item: MarketItem) {
   currentItem.value = item
+  // 确保设置已加载
+  if (!settingsStore.settings.defaultInstallPath) {
+    await settingsStore.loadSettings()
+  }
+  
   // 使用设置中的默认路径 + 服务器名称
-  const serverNameSlug = item.name.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+  // 清理服务器名称：去掉特殊字符，去掉开头/结尾/连续的横线
+  let serverNameSlug = item.name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')  // 替换特殊字符为 -
+    .replace(/^-+|-+$/g, '')       // 去掉开头和结尾的 -
+    .replace(/-+/g, '-')           // 将连续的 - 替换为单个 -
+  
   const basePath = settingsStore.settings.defaultInstallPath || '~/mcp-servers'
   const defaultWorkDir = `${basePath}/${serverNameSlug}`
   

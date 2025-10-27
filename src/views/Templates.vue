@@ -76,15 +76,12 @@ const getCategoryLabel = (category: string): string => {
 const loadTemplates = async () => {
   loading.value = true
   try {
-    const result = await window.electronAPI.invoke('template:getAll')
-    if (result.success) {
-      templates.value = result.data
-      console.log('已加载模板:', templates.value.length)
-    } else {
-      console.error('加载模板失败:', result.error)
-    }
+    const result = await window.electronAPI.template.getAll()
+    templates.value = result || []
+    console.log('已加载模板:', templates.value.length)
   } catch (error) {
     console.error('加载模板失败:', error)
+    templates.value = []
   } finally {
     loading.value = false
   }
