@@ -1,24 +1,173 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useServerStore } from '@/stores/servers'
 import { useLogStore } from '@/stores/logs'
-import { ShoppingBag, Play, Pause, Plus } from 'lucide-vue-next'
+import { useToast } from '@/components/ui/toast/use-toast'
+import { ShoppingBag, Play, Pause, Plus, Trash2, Terminal, ExternalLink, Download } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 const router = useRouter()
 
 // 使用 stores
 const serverStore = useServerStore()
 const logStore = useLogStore()
+const { toast } = useToast()
+
+// 删除确认对话框
+const showDeleteDialog = ref(false)
+const serverToDelete = ref<string | null>(null)
+const serverToDeleteName = ref('')
+
+// 日志查看对话框
+const showLogsDialog = ref(false)
+const currentServerLogs = ref<string | null>(null)
+const currentServerLogsName = ref('')
 
 // 加载数据
 onMounted(async () => {
   await serverStore.loadServers()
   logStore.subscribeToLogs()
 })
+
+// 打开删除确认对话框
+function openDeleteDialog(serverId: string, serverName: string) {
+  serverToDelete.value = serverId
+  serverToDeleteName.value = serverName
+  showDeleteDialog.value = true
+}
+
+// 确认删除
+async function confirmDelete() {
+  if (!serverToDelete.value) return
+  
+  try {
+    await serverStore.deleteServer(serverToDelete.value)
+    showDeleteDialog.value = false
+    toast({
+      title: '删除成功',
+      description: `已成功删除服务器: ${serverToDeleteName.value}`,
+    })
+    serverToDelete.value = null
+    serverToDeleteName.value = ''
+  } catch (error: any) {
+    toast({
+      title: '删除失败',
+      description: error.message || '删除服务器时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
+// 启动服务器并显示反馈
+async function handleStartServer(serverId: string, serverName: string) {
+  try {
+    await serverStore.startServer(serverId)
+    toast({
+      title: '启动成功',
+      description: `${serverName} 已成功启动`,
+    })
+  } catch (error: any) {
+    toast({
+      title: '启动失败',
+      description: error.message || '启动服务器时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
+// 停止服务器并显示反馈
+async function handleStopServer(serverId: string, serverName: string) {
+  try {
+    await serverStore.stopServer(serverId)
+    toast({
+      title: '已停止',
+      description: `${serverName} 已停止运行`,
+    })
+  } catch (error: any) {
+    toast({
+      title: '停止失败',
+      description: error.message || '停止服务器时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
+// 获取服务器状态
+function getServerStatus(serverId: string) {
+  return serverStore.serverStatuses[serverId]
+}
+
+// 判断服务器是否正在运行
+function isServerRunning(serverId: string) {
+  const status = getServerStatus(serverId)
+  return status?.status === 'running'
+}
+
+// 查看服务器日志
+async function viewServerLogs(serverId: string, serverName: string) {
+  try {
+    currentServerLogs.value = serverId
+    currentServerLogsName.value = serverName
+    showLogsDialog.value = true
+    
+    // 加载日志
+    await logStore.loadLogs(serverId)
+  } catch (error: any) {
+    toast({
+      title: '加载日志失败',
+      description: error.message || '无法加载服务器日志',
+      variant: 'destructive',
+    })
+  }
+}
+
+// 获取格式化的日志文本
+function getFormattedLogs(serverId: string) {
+  const logs = logStore.logs[serverId] || []
+  if (logs.length === 0) {
+    return '暂无日志输出'
+  }
+  return logs.map(log => {
+    const time = new Date(log.timestamp).toLocaleTimeString()
+    const level = log.level.toUpperCase().padEnd(5)
+    return `[${time}] [${level}] ${log.message}`
+  }).join('\n')
+}
+
+// 导出 Cursor 配置
+async function exportCursorConfig() {
+  try {
+    const config = await window.electronAPI.config.exportForCursor()
+    
+    // 创建 JSON 字符串
+    const json = JSON.stringify(config, null, 2)
+    
+    // 复制到剪贴板
+    await navigator.clipboard.writeText(json)
+    
+    toast({
+      title: '配置已复制',
+      description: '已将 Cursor 配置复制到剪贴板，请粘贴到 Cursor 设置中',
+    })
+  } catch (error: any) {
+    toast({
+      title: '导出失败',
+      description: error.message || '导出配置时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
 </script>
 
 <template>
@@ -106,8 +255,14 @@ onMounted(async () => {
               <div class="flex items-center justify-between">
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
+                    <!-- 运行状态指示器 -->
+                    <div 
+                      class="w-2 h-2 rounded-full"
+                      :class="isServerRunning(server.id) ? 'bg-green-500 animate-pulse' : 'bg-gray-300'"
+                    ></div>
                     <h4 class="font-medium">{{ server.name }}</h4>
                     <Badge>{{ server.type }}</Badge>
+                    <Badge v-if="isServerRunning(server.id)" variant="default" class="text-xs">运行中</Badge>
                   </div>
                   <p class="text-sm text-muted-foreground">{{ server.command }}</p>
                 </div>
@@ -115,18 +270,27 @@ onMounted(async () => {
                   <Button
                     size="sm"
                     variant="default"
-                    @click.stop="serverStore.startServer(server.id)"
+                    :disabled="isServerRunning(server.id)"
+                    @click.stop="handleStartServer(server.id, server.name)"
                   >
                     <Play class="h-4 w-4 mr-1" />
                     启动
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
-                    @click.stop="serverStore.stopServer(server.id)"
+                    variant="secondary"
+                    :disabled="!isServerRunning(server.id)"
+                    @click.stop="handleStopServer(server.id, server.name)"
                   >
                     <Pause class="h-4 w-4 mr-1" />
                     停止
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    @click.stop="openDeleteDialog(server.id, server.name)"
+                  >
+                    <Trash2 class="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -135,6 +299,51 @@ onMounted(async () => {
         </div>
       </CardContent>
     </Card>
+
+    <!-- 删除确认对话框 -->
+    <Dialog v-model:open="showDeleteDialog">
+      <DialogContent class="max-w-md">
+        <DialogHeader>
+          <DialogTitle>确认删除</DialogTitle>
+          <DialogDescription>
+            您确定要删除此服务器吗？
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="py-4">
+          <div class="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p class="font-medium mb-2">{{ serverToDeleteName }}</p>
+            <p class="text-sm text-muted-foreground">
+              ⚠️ 此操作将：
+            </p>
+            <ul class="text-sm text-muted-foreground list-disc list-inside mt-2 space-y-1">
+              <li>删除服务器配置</li>
+              <li>停止正在运行的服务器进程</li>
+              <li>清除相关日志记录</li>
+            </ul>
+            <p class="text-sm text-destructive font-medium mt-3">
+              此操作不可撤销！
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            @click="showDeleteDialog = false"
+          >
+            取消
+          </Button>
+          <Button
+            variant="destructive"
+            @click="confirmDelete"
+          >
+            <Trash2 class="h-4 w-4 mr-2" />
+            确认删除
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 

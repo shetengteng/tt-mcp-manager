@@ -66,15 +66,33 @@ export function setupServerIpc(): void {
   // 启动服务器
   ipcMain.handle('server:start', async (_, serverId: string) => {
     try {
+      console.log('[IPC] 接收到启动请求:', serverId)
       const config = configManager.getConfig(serverId)
       if (!config) {
         throw new Error(`服务器配置不存在: ${serverId}`)
       }
+      console.log('[IPC] 找到配置:', JSON.stringify(config, null, 2))
+
+      // 确保工作目录存在
+      if (config.workingDirectory) {
+        const fs = require('fs').promises
+        const path = require('path')
+        const os = require('os')
+        const workDir = config.workingDirectory.replace(/^~/, os.homedir())
+        try {
+          await fs.access(workDir)
+          console.log('[IPC] 工作目录存在:', workDir)
+        } catch {
+          console.log('[IPC] 创建工作目录:', workDir)
+          await fs.mkdir(workDir, { recursive: true })
+        }
+      }
 
       await processManager.startServer(config)
+      console.log('[IPC] 启动成功')
       return { success: true }
     } catch (error: any) {
-      console.error(`启动服务器失败 [${serverId}]:`, error)
+      console.error(`[IPC] 启动服务器失败 [${serverId}]:`, error)
       return { success: false, error: error.message }
     }
   })
@@ -104,7 +122,9 @@ export function setupServerIpc(): void {
   // 获取服务器状态
   ipcMain.handle('server:getStatus', async (_, serverId: string) => {
     try {
-      return processManager.getServerStatus(serverId)
+      const status = processManager.getServerStatus(serverId)
+      console.log(`[IPC] 获取状态 [${serverId}]:`, status)
+      return status
     } catch (error: any) {
       console.error(`获取服务器状态失败 [${serverId}]:`, error)
       throw error
