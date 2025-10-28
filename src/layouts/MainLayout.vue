@@ -7,22 +7,12 @@ import {
   Store,
   FileText,
   Settings,
-  PanelLeftClose,
-  PanelLeftOpen,
+  PanelLeft,
 } from 'lucide-vue-next'
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from '@/components/ui/resizable'
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const router = useRouter()
 const route = useRoute()
@@ -36,23 +26,23 @@ const menuItems = [
   {
     title: '仪表盘',
     icon: LayoutDashboard,
-    path: '/',
+    path: '/'
   },
   {
     title: '市场',
     icon: Store,
-    path: '/marketplace',
+    path: '/marketplace'
   },
   {
     title: '模板',
     icon: FileText,
-    path: '/templates',
+    path: '/templates'
   },
   {
     title: '设置',
     icon: Settings,
-    path: '/settings',
-  },
+    path: '/settings'
+  }
 ]
 
 // 判断是否为当前路由
@@ -99,8 +89,8 @@ const handlePanelResize = (sizes: number[]) => {
 <template>
   <TooltipProvider>
     <ResizablePanelGroup
-      :key="layoutKey"
       id="main-layout"
+      :key="layoutKey"
       direction="horizontal"
       class="h-screen w-full"
       @layout="handlePanelResize"
@@ -117,7 +107,9 @@ const handlePanelResize = (sizes: number[]) => {
           <!-- 侧边栏头部 -->
           <div class="p-4">
             <div v-if="!isCollapsed" class="flex items-center gap-2">
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <div
+                class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+              >
                 <span class="text-lg font-bold">M</span>
               </div>
               <div class="flex flex-col">
@@ -126,7 +118,9 @@ const handlePanelResize = (sizes: number[]) => {
               </div>
             </div>
             <div v-else class="flex justify-center">
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <div
+                class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+              >
                 <span class="text-sm font-bold">M</span>
               </div>
             </div>
@@ -135,10 +129,7 @@ const handlePanelResize = (sizes: number[]) => {
           <!-- 侧边栏内容 -->
           <div class="flex-1 overflow-y-auto p-2">
             <div class="space-y-1">
-              <div
-                v-for="item in menuItems"
-                :key="item.path"
-              >
+              <div v-for="item in menuItems" :key="item.path">
                 <!-- 展开状态 -->
                 <Button
                   v-if="!isCollapsed"
@@ -146,10 +137,7 @@ const handlePanelResize = (sizes: number[]) => {
                   class="w-full justify-start"
                   @click="navigateTo(item.path)"
                 >
-                  <component
-                    :is="item.icon"
-                    class="h-4 w-4 mr-2"
-                  />
+                  <component :is="item.icon" class="h-4 w-4 mr-2" />
                   <span>{{ item.title }}</span>
                 </Button>
 
@@ -162,10 +150,7 @@ const handlePanelResize = (sizes: number[]) => {
                       class="w-full"
                       @click="navigateTo(item.path)"
                     >
-                      <component
-                        :is="item.icon"
-                        class="h-4 w-4"
-                      />
+                      <component :is="item.icon" class="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right">
@@ -199,11 +184,7 @@ const handlePanelResize = (sizes: number[]) => {
       <ResizableHandle />
 
       <!-- 右侧主内容区域 -->
-      <ResizablePanel
-        id="content"
-        :default-size="isCollapsed ? 95 : 85"
-        :min-size="50"
-      >
+      <ResizablePanel id="content" :default-size="isCollapsed ? 95 : 85" :min-size="50">
         <div class="flex flex-col h-full">
           <!-- 顶部导航栏 -->
           <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6">
@@ -211,13 +192,8 @@ const handlePanelResize = (sizes: number[]) => {
               <div class="flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger as-child>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      @click="toggleCollapse"
-                    >
-                      <PanelLeftOpen v-if="isCollapsed" class="h-4 w-4" />
-                      <PanelLeftClose v-else class="h-4 w-4" />
+                    <Button variant="ghost" size="icon" @click="toggleCollapse">
+                      <PanelLeft class="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -225,7 +201,7 @@ const handlePanelResize = (sizes: number[]) => {
                   </TooltipContent>
                 </Tooltip>
                 <h1 class="text-lg font-semibold">
-                  {{ menuItems.find((item) => item.path === route.path)?.title || 'MCP Manager' }}
+                  {{ menuItems.find(item => item.path === route.path)?.title || 'MCP Manager' }}
                 </h1>
               </div>
             </div>

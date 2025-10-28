@@ -1,15 +1,9 @@
-✅ 更换收起图标！
+✅ 更换为 PanelLeft 图标！
 
-更新内容：
-- ❌ ChevronLeft/ChevronRight（箭头）
-- ✅ PanelLeftClose/PanelLeftOpen（面板图标）
+特点：
+- 简洁统一的 PanelLeft 图标
+- 不再区分开合状态，更简洁
+- 图标大小调整为 h-5 w-5
+- 通过 Tooltip 提示当前状态
 
-新图标更直观，表示左侧面板的开关状态！
-
-💡 其他可选图标：
-- Menu/X - 汉堡菜单
-- ChevronsLeft/ChevronsRight - 双箭头
-- SidebarOpen/SidebarClose - 侧边栏图标
-- MenuSquare - 方形菜单
-
-如果不满意可以再换其他图标！
+完成！ 现在图标更加简洁美观了！
