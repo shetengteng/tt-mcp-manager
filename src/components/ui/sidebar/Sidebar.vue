@@ -26,7 +26,12 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
     <slot />
   </div>
 
-  <Sheet v-else-if="isMobile" :open="openMobile" v-bind="$attrs" @update:open="setOpenMobile">
+  <Sheet
+    v-else-if="isMobile"
+    :open="openMobile"
+    v-bind="$attrs"
+    @update:open="setOpenMobile"
+  >
     <SheetContent
       data-sidebar="sidebar"
       data-mobile="true"
@@ -43,7 +48,8 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
   </Sheet>
 
   <div
-    v-else class="group peer hidden md:block"
+    v-else
+    class="group peer hidden md:block"
     :data-state="state"
     :data-collapsible="state === 'collapsed' ? collapsible : ''"
     :data-variant="variant"

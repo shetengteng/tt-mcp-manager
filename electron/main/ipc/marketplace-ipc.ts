@@ -1,7 +1,6 @@
 import { ipcMain } from 'electron'
-import { marketplaceService, configManager, processManager } from '../services'
+import { marketplaceService, configManager } from '../services'
 import type { SearchOptions, MarketItem } from '../types'
-import { spawn } from 'child_process'
 import { promisify } from 'util'
 
 const execAsync = promisify(require('child_process').exec)
@@ -95,9 +94,10 @@ export function setupMarketplaceIpc(): void {
 }
 
 /**
- * 安装 npm 包
+ * 安装 npm 包（预留功能）
  */
-async function installNpmPackage(packageName: string): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _installNpmPackage(packageName: string): Promise<void> {
   console.log(`安装 npm 包: ${packageName}`)
   const { stdout, stderr } = await execAsync(`npm install -g ${packageName}`)
   console.log(stdout)
@@ -105,9 +105,10 @@ async function installNpmPackage(packageName: string): Promise<void> {
 }
 
 /**
- * 安装 Python 包
+ * 安装 Python 包（预留功能）
  */
-async function installPythonPackage(packageName: string): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _installPythonPackage(packageName: string): Promise<void> {
   console.log(`安装 Python 包: ${packageName}`)
   const { stdout, stderr } = await execAsync(`pip install ${packageName}`)
   console.log(stdout)

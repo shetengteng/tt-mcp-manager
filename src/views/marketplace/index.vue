@@ -145,26 +145,59 @@ function openExternal(url: string) {
           <!-- 分类 -->
           <div>
             <Label class="text-sm font-medium mb-3 block">分类</Label>
-            <RadioGroup :model-value="selectedCategory" @update:model-value="handleCategoryChange">
+            <RadioGroup
+              :model-value="selectedCategory"
+              @update:model-value="handleCategoryChange"
+            >
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="cat-all" value="" />
-                <Label for="cat-all" class="font-normal cursor-pointer">全部</Label>
+                <RadioGroupItem
+                  id="cat-all"
+                  value=""
+                />
+                <Label
+                  for="cat-all"
+                  class="font-normal cursor-pointer"
+                >全部</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="cat-dev" value="开发工具" />
-                <Label for="cat-dev" class="font-normal cursor-pointer">开发工具</Label>
+                <RadioGroupItem
+                  id="cat-dev"
+                  value="开发工具"
+                />
+                <Label
+                  for="cat-dev"
+                  class="font-normal cursor-pointer"
+                >开发工具</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="cat-fs" value="文件系统" />
-                <Label for="cat-fs" class="font-normal cursor-pointer">文件系统</Label>
+                <RadioGroupItem
+                  id="cat-fs"
+                  value="文件系统"
+                />
+                <Label
+                  for="cat-fs"
+                  class="font-normal cursor-pointer"
+                >文件系统</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="cat-data" value="数据平台" />
-                <Label for="cat-data" class="font-normal cursor-pointer">数据平台</Label>
+                <RadioGroupItem
+                  id="cat-data"
+                  value="数据平台"
+                />
+                <Label
+                  for="cat-data"
+                  class="font-normal cursor-pointer"
+                >数据平台</Label>
               </div>
               <div class="flex items-center space-x-2">
-                <RadioGroupItem id="cat-web" value="Web服务" />
-                <Label for="cat-web" class="font-normal cursor-pointer">Web服务</Label>
+                <RadioGroupItem
+                  id="cat-web"
+                  value="Web服务"
+                />
+                <Label
+                  for="cat-web"
+                  class="font-normal cursor-pointer"
+                >Web服务</Label>
               </div>
             </RadioGroup>
           </div>
@@ -174,18 +207,39 @@ function openExternal(url: string) {
           <!-- 排序 - 改用 RadioGroup -->
           <div>
             <Label class="text-sm font-medium mb-3 block">排序</Label>
-            <RadioGroup :model-value="selectedSort" @update:model-value="handleSortChange">
+            <RadioGroup
+              :model-value="selectedSort"
+              @update:model-value="handleSortChange"
+            >
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="sort-stars" value="stars" />
-                <Label for="sort-stars" class="font-normal cursor-pointer">最热门</Label>
+                <RadioGroupItem
+                  id="sort-stars"
+                  value="stars"
+                />
+                <Label
+                  for="sort-stars"
+                  class="font-normal cursor-pointer"
+                >最热门</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="sort-updated" value="updated" />
-                <Label for="sort-updated" class="font-normal cursor-pointer">最新更新</Label>
+                <RadioGroupItem
+                  id="sort-updated"
+                  value="updated"
+                />
+                <Label
+                  for="sort-updated"
+                  class="font-normal cursor-pointer"
+                >最新更新</Label>
               </div>
               <div class="flex items-center space-x-2">
-                <RadioGroupItem id="sort-created" value="created" />
-                <Label for="sort-created" class="font-normal cursor-pointer">最新创建</Label>
+                <RadioGroupItem
+                  id="sort-created"
+                  value="created"
+                />
+                <Label
+                  for="sort-created"
+                  class="font-normal cursor-pointer"
+                >最新创建</Label>
               </div>
             </RadioGroup>
           </div>
@@ -220,69 +274,96 @@ function openExternal(url: string) {
         </div>
 
         <!-- 加载中 -->
-        <div v-if="marketplaceStore.loading" class="flex items-center justify-center py-12">
-          <p class="text-muted-foreground">加载中...</p>
+        <div
+          v-if="marketplaceStore.loading"
+          class="flex items-center justify-center py-12"
+        >
+          <p class="text-muted-foreground">
+            加载中...
+          </p>
         </div>
 
         <!-- 服务器卡片网格 -->
-        <div v-else-if="marketplaceStore.items.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-        <Card
-          v-for="item in marketplaceStore.items"
-          :key="item.id"
-          class="hover:border-primary cursor-pointer transition-colors flex flex-col"
-          @click="marketplaceStore.selectItem(item)"
+        <div
+          v-else-if="marketplaceStore.items.length > 0"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
         >
-          <CardHeader>
-            <div class="flex items-start gap-2 mb-3">
-              <CardTitle class="text-base leading-relaxed flex-1 min-w-0 break-normal">
-                {{ item.displayName }}
-              </CardTitle>
-              <div class="flex items-center gap-1 shrink-0">
-                <Badge v-if="item.official" variant="default" class="text-xs whitespace-nowrap">官方</Badge>
-                <Badge variant="secondary" class="text-xs whitespace-nowrap">{{ item.language }}</Badge>
+          <Card
+            v-for="item in marketplaceStore.items"
+            :key="item.id"
+            class="hover:border-primary cursor-pointer transition-colors flex flex-col"
+            @click="marketplaceStore.selectItem(item)"
+          >
+            <CardHeader>
+              <div class="flex items-start gap-2 mb-3">
+                <CardTitle class="text-base leading-relaxed flex-1 min-w-0 break-normal">
+                  {{ item.displayName }}
+                </CardTitle>
+                <div class="flex items-center gap-1 shrink-0">
+                  <Badge
+                    v-if="item.official"
+                    variant="default"
+                    class="text-xs whitespace-nowrap"
+                  >
+                    官方
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    class="text-xs whitespace-nowrap"
+                  >
+                    {{ item.language }}
+                  </Badge>
+                </div>
               </div>
-            </div>
-            <CardDescription class="line-clamp-3 text-sm leading-relaxed">
-              {{ item.descriptionZh || item.description }}
-            </CardDescription>
-          </CardHeader>
+              <CardDescription class="line-clamp-3 text-sm leading-relaxed">
+                {{ item.descriptionZh || item.description }}
+              </CardDescription>
+            </CardHeader>
           
-          <CardContent class="flex-1">
-            <div class="flex items-center justify-between text-xs text-muted-foreground mb-2">
-              <div class="flex items-center gap-1">
-                <Star class="h-3 w-3" />
-                <span>{{ item.stars.toLocaleString() }}</span>
+            <CardContent class="flex-1">
+              <div class="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                <div class="flex items-center gap-1">
+                  <Star class="h-3 w-3" />
+                  <span>{{ item.stars.toLocaleString() }}</span>
+                </div>
+                <span>by {{ item.author }}</span>
               </div>
-              <span>by {{ item.author }}</span>
-            </div>
-            <div class="text-xs font-mono text-muted-foreground truncate" :title="item.installCommand">
-              {{ item.installCommand }}
-            </div>
-          </CardContent>
+              <div
+                class="text-xs font-mono text-muted-foreground truncate"
+                :title="item.installCommand"
+              >
+                {{ item.installCommand }}
+              </div>
+            </CardContent>
 
-          <CardFooter class="flex gap-2 mt-auto">
-            <Button
-              size="sm"
-              class="flex-1"
-              @click.stop="openInstallDialog(item)"
-            >
-              <Download class="h-3 w-3 mr-1" />
-              安装
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              @click.stop="openDetailsDialog(item)"
-            >
-              详情
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+            <CardFooter class="flex gap-2 mt-auto">
+              <Button
+                size="sm"
+                class="flex-1"
+                @click.stop="openInstallDialog(item)"
+              >
+                <Download class="h-3 w-3 mr-1" />
+                安装
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                @click.stop="openDetailsDialog(item)"
+              >
+                详情
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
 
         <!-- 空状态 -->
-        <div v-else class="flex items-center justify-center py-12">
-          <p class="text-muted-foreground">没有找到匹配的服务器</p>
+        <div
+          v-else
+          class="flex items-center justify-center py-12"
+        >
+          <p class="text-muted-foreground">
+            没有找到匹配的服务器
+          </p>
         </div>
       </div>
     </div>
@@ -346,14 +427,14 @@ function openExternal(url: string) {
         <DialogFooter>
           <Button
             variant="outline"
-            @click="showInstallDialog = false"
             :disabled="installing"
+            @click="showInstallDialog = false"
           >
             取消
           </Button>
           <Button
-            @click="handleInstall"
             :disabled="installing || !installConfig.name"
+            @click="handleInstall"
           >
             {{ installing ? '安装中...' : '安装' }}
           </Button>
@@ -367,7 +448,13 @@ function openExternal(url: string) {
         <DialogHeader>
           <DialogTitle class="flex items-center gap-2">
             {{ currentItem?.displayName }}
-            <Badge v-if="currentItem?.official" variant="default" class="ml-2">官方</Badge>
+            <Badge
+              v-if="currentItem?.official"
+              variant="default"
+              class="ml-2"
+            >
+              官方
+            </Badge>
           </DialogTitle>
           <DialogDescription>
             by {{ currentItem?.author }}
@@ -377,7 +464,9 @@ function openExternal(url: string) {
         <div class="space-y-4 py-4">
           <!-- 基本信息 -->
           <div>
-            <h3 class="font-medium mb-2">描述</h3>
+            <h3 class="font-medium mb-2">
+              描述
+            </h3>
             <p class="text-sm text-muted-foreground">
               {{ currentItem?.descriptionZh || currentItem?.description }}
             </p>
@@ -395,7 +484,9 @@ function openExternal(url: string) {
             <div>
               <Label class="text-xs text-muted-foreground">语言</Label>
               <div class="mt-1">
-                <Badge variant="secondary">{{ currentItem?.language }}</Badge>
+                <Badge variant="secondary">
+                  {{ currentItem?.language }}
+                </Badge>
               </div>
             </div>
           </div>
@@ -425,19 +516,19 @@ function openExternal(url: string) {
           <!-- 链接 -->
           <div class="flex gap-2">
             <Button
+              v-if="currentItem?.githubUrl"
               variant="outline"
               size="sm"
               @click="openExternal(currentItem?.githubUrl || '')"
-              v-if="currentItem?.githubUrl"
             >
               <Github class="h-4 w-4 mr-2" />
               GitHub
             </Button>
             <Button
+              v-if="currentItem?.homepage"
               variant="outline"
               size="sm"
               @click="openExternal(currentItem?.homepage || '')"
-              v-if="currentItem?.homepage"
             >
               <ExternalLink class="h-4 w-4 mr-2" />
               主页
@@ -446,7 +537,10 @@ function openExternal(url: string) {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" @click="showDetailsDialog = false">
+          <Button
+            variant="outline"
+            @click="showDetailsDialog = false"
+          >
             关闭
           </Button>
           <Button @click="openInstallDialog(currentItem!); showDetailsDialog = false">

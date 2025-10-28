@@ -4,11 +4,7 @@ import { Play, Pause, FileText, TestTube2, Download, RefreshCcw, Trash2 } from '
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 // 定义 props
 interface Props {
@@ -25,7 +21,7 @@ interface Props {
   statusText: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 // 定义 emit 事件
 const emit = defineEmits<{
@@ -52,7 +48,7 @@ const emit = defineEmits<{
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1 flex-wrap">
               <!-- 运行状态指示器 -->
-              <div 
+              <div
                 class="w-2 h-2 rounded-full shrink-0"
                 :class="statusColor"
                 :title="statusText"
@@ -63,16 +59,16 @@ const emit = defineEmits<{
               <Badge class="shrink-0">
                 {{ server.type }}
               </Badge>
-              <Badge 
-                v-if="isRunning" 
-                variant="default" 
+              <Badge
+                v-if="isRunning"
+                variant="default"
                 class="text-xs shrink-0"
               >
                 运行中
               </Badge>
-              <Badge 
-                v-else-if="isError" 
-                variant="destructive" 
+              <Badge
+                v-else-if="isError"
+                variant="destructive"
                 class="text-xs shrink-0"
               >
                 错误
@@ -87,13 +83,17 @@ const emit = defineEmits<{
         <!-- 第二行：错误提示 + 操作按钮 -->
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <!-- 错误提示 -->
-          <div v-if="isError" class="flex items-center gap-2">
-            <span class="text-xs text-destructive whitespace-nowrap">
-              启动失败
-            </span>
+          <div
+            v-if="isError"
+            class="flex items-center gap-2"
+          >
+            <span class="text-xs text-destructive whitespace-nowrap"> 启动失败 </span>
           </div>
-          <div v-else class="flex-1" />
-          
+          <div
+            v-else
+            class="flex-1"
+          />
+
           <!-- 按钮组 -->
           <div class="flex gap-2 flex-wrap">
             <!-- 启动按钮 -->
@@ -112,9 +112,7 @@ const emit = defineEmits<{
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p>
-                  启动服务器
-                </p>
+                <p>启动服务器</p>
               </TooltipContent>
             </Tooltip>
 
@@ -134,9 +132,7 @@ const emit = defineEmits<{
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p>
-                  停止服务器
-                </p>
+                <p>停止服务器</p>
               </TooltipContent>
             </Tooltip>
 
@@ -178,9 +174,7 @@ const emit = defineEmits<{
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p>
-                  测试功能
-                </p>
+                <p>测试功能</p>
               </TooltipContent>
             </Tooltip>
 
@@ -200,9 +194,7 @@ const emit = defineEmits<{
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p>
-                  导出配置
-                </p>
+                <p>导出配置</p>
               </TooltipContent>
             </Tooltip>
 
@@ -222,9 +214,7 @@ const emit = defineEmits<{
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p>
-                  同步到 Cursor
-                </p>
+                <p>同步到 Cursor</p>
               </TooltipContent>
             </Tooltip>
 
@@ -244,9 +234,7 @@ const emit = defineEmits<{
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p>
-                  删除
-                </p>
+                <p>删除</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -255,4 +243,3 @@ const emit = defineEmits<{
     </CardContent>
   </Card>
 </template>
-

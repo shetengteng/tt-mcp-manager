@@ -125,7 +125,10 @@ function handleViewLogs() {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="max-w-2xl">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
@@ -139,7 +142,10 @@ function handleViewLogs() {
 
       <div class="space-y-4 min-h-[300px] flex flex-col">
         <!-- 测试中 -->
-        <div v-if="isTesting" class="flex-1 flex items-center justify-center">
+        <div
+          v-if="isTesting"
+          class="flex-1 flex items-center justify-center"
+        >
           <div class="flex flex-col items-center gap-4">
             <div class="relative">
               <div class="animate-spin rounded-full h-16 w-16 border-4 border-primary/20" />
@@ -157,16 +163,25 @@ function handleViewLogs() {
         </div>
 
         <!-- 测试结果 -->
-        <div v-else-if="testResult" class="space-y-4 flex-1">
+        <div
+          v-else-if="testResult"
+          class="space-y-4 flex-1"
+        >
           <!-- 成功 -->
-          <div v-if="testResult.success" class="space-y-4">
+          <div
+            v-if="testResult.success"
+            class="space-y-4"
+          >
             <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
               <div class="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400" />
               <span class="font-medium">✅ 服务器响应正常</span>
             </div>
 
             <!-- 支持的功能 -->
-            <div v-if="testResult.capabilities" class="space-y-3">
+            <div
+              v-if="testResult.capabilities"
+              class="space-y-3"
+            >
               <!-- Tools -->
               <div v-if="testResult.capabilities.tools && testResult.capabilities.tools.length > 0">
                 <h4 class="text-sm font-medium mb-2">
@@ -241,7 +256,10 @@ function handleViewLogs() {
           </div>
 
           <!-- 失败 -->
-          <div v-else class="space-y-4">
+          <div
+            v-else
+            class="space-y-4"
+          >
             <div class="flex items-center gap-2 text-red-600 dark:text-red-400">
               <div class="w-3 h-3 rounded-full bg-red-600 dark:bg-red-400" />
               <span class="font-medium">❌ 测试失败</span>
@@ -273,7 +291,10 @@ function handleViewLogs() {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="emit('update:open', false)">
+        <Button
+          variant="outline"
+          @click="emit('update:open', false)"
+        >
           关闭
         </Button>
         <Button 

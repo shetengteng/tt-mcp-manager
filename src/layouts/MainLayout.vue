@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   Sidebar,
@@ -16,14 +15,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import {
   LayoutDashboard,
   Store,
   FileText,
   Settings,
-  ChevronRight,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -86,12 +82,18 @@ const navigateTo = (path: string) => {
           <SidebarGroupLabel>导航</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem v-for="item in menuItems" :key="item.path">
+              <SidebarMenuItem
+                v-for="item in menuItems"
+                :key="item.path"
+              >
                 <SidebarMenuButton
                   :is-active="isActive(item.path)"
                   @click="navigateTo(item.path)"
                 >
-                  <component :is="item.icon" class="h-4 w-4" />
+                  <component
+                    :is="item.icon"
+                    class="h-4 w-4"
+                  />
                   <span>{{ item.title }}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

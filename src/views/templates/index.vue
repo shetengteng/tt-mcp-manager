@@ -114,12 +114,19 @@ onMounted(() => {
     <div class="mb-6">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="text-2xl font-bold">模板库</h2>
+          <h2 class="text-2xl font-bold">
+            模板库
+          </h2>
           <p class="text-sm text-muted-foreground mt-1">
             💡 从模板快速创建常用的 MCP Server 配置
           </p>
         </div>
-        <Button @click="loadTemplates" variant="outline" size="sm" :disabled="loading">
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="loading"
+          @click="loadTemplates"
+        >
           <RefreshCcw :class="['h-4 w-4 mr-2', { 'animate-spin': loading }]" />
           刷新
         </Button>
@@ -139,9 +146,9 @@ onMounted(() => {
           <Button
             v-for="cat in categories"
             :key="cat"
-            @click="selectedCategory = cat"
             :variant="selectedCategory === cat ? 'default' : 'outline'"
             size="sm"
+            @click="selectedCategory = cat"
           >
             {{ getCategoryLabel(cat) }}
           </Button>
@@ -150,23 +157,42 @@ onMounted(() => {
     </div>
 
     <!-- 模板网格 -->
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <p class="text-muted-foreground">加载中...</p>
+    <div
+      v-if="loading"
+      class="flex items-center justify-center py-12"
+    >
+      <p class="text-muted-foreground">
+        加载中...
+      </p>
     </div>
 
-    <div v-else-if="filteredTemplates.length === 0" class="flex flex-col items-center justify-center py-12">
-      <p class="text-muted-foreground mb-2">未找到模板</p>
-      <p class="text-sm text-muted-foreground">尝试调整搜索条件</p>
+    <div
+      v-else-if="filteredTemplates.length === 0"
+      class="flex flex-col items-center justify-center py-12"
+    >
+      <p class="text-muted-foreground mb-2">
+        未找到模板
+      </p>
+      <p class="text-sm text-muted-foreground">
+        尝试调整搜索条件
+      </p>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div
+      v-else
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <div
         v-for="template in filteredTemplates"
         :key="template.name"
         class="p-6 border rounded-lg hover:border-primary cursor-pointer transition-colors bg-card"
       >
-        <div class="text-4xl mb-3">{{ template.icon }}</div>
-        <h3 class="font-semibold mb-2">{{ template.displayName }}</h3>
+        <div class="text-4xl mb-3">
+          {{ template.icon }}
+        </div>
+        <h3 class="font-semibold mb-2">
+          {{ template.displayName }}
+        </h3>
         <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
           {{ template.description }}
         </p>
@@ -184,7 +210,10 @@ onMounted(() => {
           <span>{{ template.author }}</span>
           <span>v{{ template.version }}</span>
         </div>
-        <Button @click="useTemplate(template)" class="w-full">
+        <Button
+          class="w-full"
+          @click="useTemplate(template)"
+        >
           使用此模板
         </Button>
       </div>

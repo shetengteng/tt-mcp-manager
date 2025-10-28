@@ -1,0 +1,17 @@
+# 编译输出目录
+dist
+dist-electron
+out
+
+# 依赖
+node_modules
+
+# 配置文件
+*.config.js
+*.config.ts
+
+# 临时文件
+.vscode
+.idea
+*.log
+

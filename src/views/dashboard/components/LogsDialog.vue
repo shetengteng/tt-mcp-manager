@@ -62,7 +62,10 @@ function getFormattedLogs(serverId: string) {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="max-w-4xl h-[80vh] flex flex-col">
       <DialogHeader class="shrink-0">
         <DialogTitle class="flex items-center gap-2">
@@ -81,7 +84,10 @@ function getFormattedLogs(serverId: string) {
       </div>
 
       <DialogFooter class="shrink-0">
-        <Button variant="outline" @click="emit('update:open', false)">
+        <Button
+          variant="outline"
+          @click="emit('update:open', false)"
+        >
           关闭
         </Button>
       </DialogFooter>

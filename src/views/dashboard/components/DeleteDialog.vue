@@ -55,7 +55,10 @@ async function handleConfirm() {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>

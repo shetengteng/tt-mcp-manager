@@ -34,34 +34,67 @@ const emit = defineEmits<{
         <Label class="text-sm font-medium mb-3 block">
           分类
         </Label>
-        <RadioGroup :model-value="selectedCategory" @update:model-value="emit('update:selectedCategory', $event)">
+        <RadioGroup
+          :model-value="selectedCategory"
+          @update:model-value="emit('update:selectedCategory', $event)"
+        >
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="cat-all" value="" />
-            <Label for="cat-all" class="cursor-pointer">
+            <RadioGroupItem
+              id="cat-all"
+              value=""
+            />
+            <Label
+              for="cat-all"
+              class="cursor-pointer"
+            >
               全部
             </Label>
           </div>
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="cat-official" value="official" />
-            <Label for="cat-official" class="cursor-pointer">
+            <RadioGroupItem
+              id="cat-official"
+              value="official"
+            />
+            <Label
+              for="cat-official"
+              class="cursor-pointer"
+            >
               官方
             </Label>
           </div>
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="cat-ai" value="ai" />
-            <Label for="cat-ai" class="cursor-pointer">
+            <RadioGroupItem
+              id="cat-ai"
+              value="ai"
+            />
+            <Label
+              for="cat-ai"
+              class="cursor-pointer"
+            >
               AI 工具
             </Label>
           </div>
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="cat-dev" value="development" />
-            <Label for="cat-dev" class="cursor-pointer">
+            <RadioGroupItem
+              id="cat-dev"
+              value="development"
+            />
+            <Label
+              for="cat-dev"
+              class="cursor-pointer"
+            >
               开发工具
             </Label>
           </div>
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="cat-data" value="data" />
-            <Label for="cat-data" class="cursor-pointer">
+            <RadioGroupItem
+              id="cat-data"
+              value="data"
+            />
+            <Label
+              for="cat-data"
+              class="cursor-pointer"
+            >
               数据处理
             </Label>
           </div>
@@ -73,22 +106,43 @@ const emit = defineEmits<{
         <Label class="text-sm font-medium mb-3 block">
           排序方式
         </Label>
-        <RadioGroup :model-value="selectedSort" @update:model-value="emit('update:selectedSort', $event)">
+        <RadioGroup
+          :model-value="selectedSort"
+          @update:model-value="emit('update:selectedSort', $event)"
+        >
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="sort-stars" value="stars" />
-            <Label for="sort-stars" class="cursor-pointer">
+            <RadioGroupItem
+              id="sort-stars"
+              value="stars"
+            />
+            <Label
+              for="sort-stars"
+              class="cursor-pointer"
+            >
               星标数
             </Label>
           </div>
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="sort-updated" value="updated" />
-            <Label for="sort-updated" class="cursor-pointer">
+            <RadioGroupItem
+              id="sort-updated"
+              value="updated"
+            />
+            <Label
+              for="sort-updated"
+              class="cursor-pointer"
+            >
               最近更新
             </Label>
           </div>
           <div class="flex items-center space-x-2 mb-2">
-            <RadioGroupItem id="sort-created" value="created" />
-            <Label for="sort-created" class="cursor-pointer">
+            <RadioGroupItem
+              id="sort-created"
+              value="created"
+            />
+            <Label
+              for="sort-created"
+              class="cursor-pointer"
+            >
               最新发布
             </Label>
           </div>

@@ -74,7 +74,10 @@ async function handleSelectFolder() {
                 系统启动时自动运行 MCP Manager
               </p>
             </div>
-            <Switch id="auto-start" v-model:checked="settingsStore.settings.autoStart" />
+            <Switch
+              id="auto-start"
+              v-model:checked="settingsStore.settings.autoStart"
+            />
           </div>
           
           <Separator />
@@ -86,7 +89,10 @@ async function handleSelectFolder() {
                 点击最小化按钮时隐藏到系统托盘
               </p>
             </div>
-            <Switch id="minimize-tray" v-model:checked="settingsStore.settings.minimizeToTray" />
+            <Switch
+              id="minimize-tray"
+              v-model:checked="settingsStore.settings.minimizeToTray"
+            />
           </div>
           
           <Separator />
@@ -98,11 +104,16 @@ async function handleSelectFolder() {
                 关闭窗口时不退出应用，保持服务器运行
               </p>
             </div>
-            <Switch id="keep-background" v-model:checked="settingsStore.settings.keepBackground" />
+            <Switch
+              id="keep-background"
+              v-model:checked="settingsStore.settings.keepBackground"
+            />
           </div>
         </CardContent>
         <CardFooter>
-          <Button @click="handleSaveSettings">保存设置</Button>
+          <Button @click="handleSaveSettings">
+            保存设置
+          </Button>
         </CardFooter>
       </Card>
 
@@ -122,7 +133,11 @@ async function handleSelectFolder() {
                 placeholder="例如: ~/mcp-servers"
                 class="flex-1"
               />
-              <Button variant="outline" size="icon" @click="handleSelectFolder">
+              <Button
+                variant="outline"
+                size="icon"
+                @click="handleSelectFolder"
+              >
                 <FolderOpen class="h-4 w-4" />
               </Button>
             </div>
@@ -135,7 +150,9 @@ async function handleSelectFolder() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button @click="handleSaveSettings">保存设置</Button>
+          <Button @click="handleSaveSettings">
+            保存设置
+          </Button>
         </CardFooter>
       </Card>
 
@@ -160,7 +177,9 @@ async function handleSelectFolder() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button @click="handleSaveSettings">保存设置</Button>
+          <Button @click="handleSaveSettings">
+            保存设置
+          </Button>
         </CardFooter>
       </Card>
 
@@ -187,7 +206,9 @@ async function handleSelectFolder() {
         </CardHeader>
         <CardContent class="space-y-4">
           <div>
-            <p class="text-sm font-semibold">版本 1.0.0</p>
+            <p class="text-sm font-semibold">
+              版本 1.0.0
+            </p>
             <p class="text-sm text-muted-foreground mt-1">
               基于 Electron + Vue 3 + Shadcn-Vue 构建
             </p>
@@ -196,16 +217,28 @@ async function handleSelectFolder() {
           <Separator />
           
           <div class="flex flex-wrap gap-3">
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+            >
               检查更新
             </Button>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+            >
               查看文档
             </Button>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+            >
               GitHub 仓库
             </Button>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+            >
               报告问题
             </Button>
           </div>

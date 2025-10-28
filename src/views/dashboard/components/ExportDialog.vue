@@ -51,7 +51,10 @@ async function handleCopy() {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="max-w-3xl max-h-[80vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>
@@ -99,7 +102,10 @@ async function handleCopy() {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="emit('update:open', false)">
+        <Button
+          variant="outline"
+          @click="emit('update:open', false)"
+        >
           关闭
         </Button>
         <Button @click="handleCopy">

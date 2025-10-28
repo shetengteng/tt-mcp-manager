@@ -198,7 +198,10 @@ async function handleSyncServer(serverId: string, serverName: string) {
     </CardHeader>
     <CardContent>
       <!-- 加载中 -->
-      <div v-if="serverStore.loading" class="text-center py-8">
+      <div
+        v-if="serverStore.loading"
+        class="text-center py-8"
+      >
         <div class="text-muted-foreground">
           加载中...
         </div>
@@ -219,7 +222,10 @@ async function handleSyncServer(serverId: string, serverName: string) {
       </div>
 
       <!-- 服务器列表 -->
-      <div v-else class="space-y-3">
+      <div
+        v-else
+        class="space-y-3"
+      >
         <TooltipProvider :delay-duration="200">
           <ServerCard
             v-for="server in serverStore.servers"

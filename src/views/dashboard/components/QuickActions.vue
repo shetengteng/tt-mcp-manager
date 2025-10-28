@@ -77,7 +77,10 @@ async function handleExportConfig() {
         <Plus class="h-4 w-4 mr-2" />
         从模板创建
       </Button>
-      <Button variant="secondary" @click="router.push('/marketplace')">
+      <Button
+        variant="secondary"
+        @click="router.push('/marketplace')"
+      >
         <ShoppingBag class="h-4 w-4 mr-2" />
         浏览市场
       </Button>
