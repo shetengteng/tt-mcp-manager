@@ -5,22 +5,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue')
+    component: () => import('@/views/dashboard/index.vue')
   },
   {
     path: '/marketplace',
     name: 'Marketplace',
-    component: () => import('@/views/Marketplace.vue')
+    component: () => import('@/views/marketplace/index.vue')
   },
   {
     path: '/templates',
     name: 'Templates',
-    component: () => import('@/views/Templates.vue')
+    component: () => import('@/views/templates/index.vue')
   },
   {
     path: '/settings',
     name: 'Settings',
-    component: () => import('@/views/Settings.vue')
+    component: () => import('@/views/settings/index.vue')
   }
 ]
 
