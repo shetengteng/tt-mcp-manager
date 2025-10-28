@@ -113,15 +113,21 @@ export const useServerStore = defineStore('servers', () => {
 
   async function stopServer(id: string) {
     try {
-      await window.electronAPI.server.stop(id)
+      console.log('[Store] 调用停止 API:', id)
+      const result = await window.electronAPI.server.stop(id)
+      console.log('[Store] 停止 API 返回:', result)
+      
       // 更新状态 - 创建新对象以触发响应式更新
       const status = await window.electronAPI.server.getStatus(id)
+      console.log('[Store] 停止后获取状态:', status)
+      
       serverStatuses.value = {
         ...serverStatuses.value,
         [id]: status
       }
+      console.log('[Store] 停止后更新状态完成')
     } catch (error) {
-      console.error('停止服务器失败:', error)
+      console.error('[Store] 停止服务器失败:', error)
       throw error
     }
   }

@@ -18,12 +18,27 @@ export class ProcessManager extends EventEmitter {
    * 启动 MCP Server
    */
   async startServer(config: ServerConfig): Promise<void> {
+    console.log(`[ProcessManager] ========== 启动请求 ==========`)
+    console.log(`[ProcessManager] 服务器 ID: ${config.id}`)
+    console.log(`[ProcessManager] 当前进程 Map 大小: ${this.processes.size}`)
+    console.log(`[ProcessManager] Map 中的所有进程 ID:`, Array.from(this.processes.keys()))
+    
     // 检查进程是否已经在运行
     const existingProcess = this.processes.get(config.id)
+    console.log(`[ProcessManager] 检查现有进程:`, existingProcess ? '存在' : '不存在')
+    
     if (existingProcess) {
       // 检查进程是否真的还活着
       const isAlive = existingProcess.process && !existingProcess.process.killed
+      console.log(`[ProcessManager] 进程是否存活:`, isAlive)
+      console.log(`[ProcessManager] 进程详情:`, {
+        pid: existingProcess.pid,
+        killed: existingProcess.process?.killed,
+        status: existingProcess.status
+      })
+      
       if (isAlive) {
+        console.error(`[ProcessManager] ❌ 拒绝启动: 服务器已在运行`)
         throw new Error(`服务器 ${config.id} 已在运行`)
       } else {
         // 进程已死亡但记录还在，清理它
@@ -107,19 +122,30 @@ export class ProcessManager extends EventEmitter {
    * 停止 MCP Server
    */
   async stopServer(serverId: string): Promise<void> {
+    console.log(`[ProcessManager] ========== 停止请求 ==========`)
+    console.log(`[ProcessManager] 服务器 ID: ${serverId}`)
+    console.log(`[ProcessManager] 当前进程 Map 大小: ${this.processes.size}`)
+    console.log(`[ProcessManager] Map 中的所有进程 ID:`, Array.from(this.processes.keys()))
+    
     const mcpProcess = this.processes.get(serverId)
     if (!mcpProcess) {
-      console.log(`[ProcessManager] 服务器 ${serverId} 不存在或已停止`)
+      console.log(`[ProcessManager] ⚠️ 服务器 ${serverId} 不存在或已停止，跳过`)
       return // 不抛出错误，直接返回
     }
 
     console.log(`[ProcessManager] 停止服务器: ${serverId}`)
+    console.log(`[ProcessManager] 进程信息:`, {
+      pid: mcpProcess.pid,
+      status: mcpProcess.status,
+      killed: mcpProcess.process?.killed
+    })
 
     const process = mcpProcess.process
 
     // 立即从 Map 中删除，防止重复操作
     this.processes.delete(serverId)
-    console.log(`[ProcessManager] 已从 Map 中删除进程，剩余进程数: ${this.processes.size}`)
+    console.log(`[ProcessManager] ✅ 已从 Map 中删除进程，剩余进程数: ${this.processes.size}`)
+    console.log(`[ProcessManager] 剩余进程 ID:`, Array.from(this.processes.keys()))
 
     // 先发送 SIGTERM 信号
     process.kill('SIGTERM')

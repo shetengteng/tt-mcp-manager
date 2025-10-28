@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useServerStore } from '@/stores/servers'
 import { useLogStore } from '@/stores/logs'
 import { useToast } from '@/components/ui/toast/use-toast'
-import { ShoppingBag, Play, Pause, Plus, Trash2, Terminal, ExternalLink, Download } from 'lucide-vue-next'
+import { ShoppingBag, Play, Pause, Plus, Trash2, Terminal, ExternalLink, Download, FileText } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,6 +33,10 @@ const serverToDeleteName = ref('')
 const showLogsDialog = ref(false)
 const currentServerLogs = ref<string | null>(null)
 const currentServerLogsName = ref('')
+
+// 导出配置对话框
+const showExportDialog = ref(false)
+const exportedConfig = ref('')
 
 // 加载数据
 onMounted(async () => {
@@ -69,37 +73,77 @@ async function confirmDelete() {
   }
 }
 
+// 操作中的服务器 ID 集合
+const operatingServers = ref<Set<string>>(new Set())
+
+// 检查服务器是否正在操作中
+function isServerOperating(serverId: string) {
+  return operatingServers.value.has(serverId)
+}
+
 // 启动服务器并显示反馈
 async function handleStartServer(serverId: string, serverName: string) {
+  if (operatingServers.value.has(serverId)) {
+    console.log('服务器操作中，跳过:', serverId)
+    return
+  }
+  
+  operatingServers.value.add(serverId)
   try {
+    console.log('开始启动操作:', serverId)
+    
+    // 额外等待一下，确保前一次停止完全执行完
+    await new Promise(resolve => setTimeout(resolve, 200))
+    console.log('启动前等待完成:', serverId)
+    
     await serverStore.startServer(serverId)
+    console.log('启动操作完成:', serverId)
     toast({
       title: '启动成功',
       description: `${serverName} 已成功启动`,
     })
   } catch (error: any) {
+    console.error('启动操作失败:', error)
     toast({
       title: '启动失败',
       description: error.message || '启动服务器时发生错误',
       variant: 'destructive',
     })
+  } finally {
+    operatingServers.value.delete(serverId)
   }
 }
 
 // 停止服务器并显示反馈
 async function handleStopServer(serverId: string, serverName: string) {
+  if (operatingServers.value.has(serverId)) {
+    console.log('服务器操作中，跳过:', serverId)
+    return
+  }
+  
+  operatingServers.value.add(serverId)
   try {
+    console.log('开始停止操作:', serverId)
     await serverStore.stopServer(serverId)
+    console.log('停止操作完成:', serverId)
+    
+    // 等待一小段时间确保进程完全清理
+    await new Promise(resolve => setTimeout(resolve, 500))
+    console.log('停止操作清理完成:', serverId)
+    
     toast({
       title: '已停止',
       description: `${serverName} 已停止运行`,
     })
   } catch (error: any) {
+    console.error('停止操作失败:', error)
     toast({
       title: '停止失败',
       description: error.message || '停止服务器时发生错误',
       variant: 'destructive',
     })
+  } finally {
+    operatingServers.value.delete(serverId)
   }
 }
 
@@ -148,22 +192,54 @@ function getFormattedLogs(serverId: string) {
 // 导出 Cursor 配置
 async function exportCursorConfig() {
   try {
-    const config = await window.electronAPI.config.exportForCursor()
+    const config = await window.electronAPI.config.export()
     
-    // 创建 JSON 字符串
-    const json = JSON.stringify(config, null, 2)
+    // 创建格式化的 JSON 字符串
+    exportedConfig.value = JSON.stringify(config, null, 2)
     
-    // 复制到剪贴板
-    await navigator.clipboard.writeText(json)
-    
-    toast({
-      title: '配置已复制',
-      description: '已将 Cursor 配置复制到剪贴板，请粘贴到 Cursor 设置中',
-    })
+    // 显示预览对话框
+    showExportDialog.value = true
   } catch (error: any) {
     toast({
       title: '导出失败',
       description: error.message || '导出配置时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
+// 复制配置到剪贴板
+async function copyConfig() {
+  try {
+    await navigator.clipboard.writeText(exportedConfig.value)
+    toast({
+      title: '已复制',
+      description: '配置已复制到剪贴板',
+    })
+    showExportDialog.value = false
+  } catch (error: any) {
+    toast({
+      title: '复制失败',
+      description: error.message || '复制到剪贴板时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
+// 导出单个服务器配置
+async function exportSingleServer(serverId: string, serverName: string) {
+  try {
+    const config = await window.electronAPI.config.exportSingle(serverId)
+    
+    // 创建格式化的 JSON 字符串
+    exportedConfig.value = JSON.stringify(config, null, 2)
+    
+    // 显示预览对话框
+    showExportDialog.value = true
+  } catch (error: any) {
+    toast({
+      title: '导出失败',
+      description: error.message || `导出 ${serverName} 配置时发生错误`,
       variant: 'destructive',
     })
   }
@@ -219,6 +295,10 @@ async function exportCursorConfig() {
           <ShoppingBag class="h-4 w-4 mr-2" />
           浏览市场
         </Button>
+        <Button variant="outline" @click="exportCursorConfig" :disabled="serverStore.servers.length === 0">
+          <Download class="h-4 w-4 mr-2" />
+          导出 Cursor 配置
+        </Button>
       </CardContent>
     </Card>
 
@@ -270,25 +350,45 @@ async function exportCursorConfig() {
                   <Button
                     size="sm"
                     variant="default"
-                    :disabled="isServerRunning(server.id)"
+                    :disabled="isServerRunning(server.id) || isServerOperating(server.id)"
                     @click.stop="handleStartServer(server.id, server.name)"
                   >
                     <Play class="h-4 w-4 mr-1" />
-                    启动
+                    {{ isServerOperating(server.id) ? '操作中...' : '启动' }}
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    :disabled="!isServerRunning(server.id)"
+                    :disabled="!isServerRunning(server.id) || isServerOperating(server.id)"
                     @click.stop="handleStopServer(server.id, server.name)"
                   >
                     <Pause class="h-4 w-4 mr-1" />
-                    停止
+                    {{ isServerOperating(server.id) ? '操作中...' : '停止' }}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    :disabled="isServerOperating(server.id)"
+                    @click.stop="viewServerLogs(server.id, server.name)"
+                    title="查看日志"
+                  >
+                    <FileText class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    :disabled="isServerOperating(server.id)"
+                    @click.stop="exportSingleServer(server.id, server.name)"
+                    title="导出配置"
+                  >
+                    <Download class="h-4 w-4" />
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
+                    :disabled="isServerOperating(server.id)"
                     @click.stop="openDeleteDialog(server.id, server.name)"
+                    title="删除"
                   >
                     <Trash2 class="h-4 w-4" />
                   </Button>
@@ -340,6 +440,87 @@ async function exportCursorConfig() {
           >
             <Trash2 class="h-4 w-4 mr-2" />
             确认删除
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- 日志查看对话框 -->
+    <Dialog v-model:open="showLogsDialog">
+      <DialogContent class="max-w-4xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2">
+            <FileText class="h-5 w-5" />
+            {{ currentServerLogsName }} - 运行日志
+          </DialogTitle>
+          <DialogDescription>
+            实时查看服务器的运行日志输出
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="flex-1 overflow-hidden">
+          <div class="h-full overflow-y-auto border rounded-md bg-black/90 p-4">
+            <pre class="text-xs font-mono text-green-400 whitespace-pre-wrap">{{ currentServerLogs ? getFormattedLogs(currentServerLogs) : '暂无日志输出' }}</pre>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="showLogsDialog = false">
+            关闭
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- 导出配置对话框 -->
+    <Dialog v-model:open="showExportDialog">
+      <DialogContent class="max-w-3xl max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>导出 Cursor 配置</DialogTitle>
+          <DialogDescription>
+            将以下配置复制到 Cursor 的设置文件中（Preferences > Settings > JSON）
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="flex-1 overflow-hidden flex flex-col gap-4">
+          <!-- 配置预览 -->
+          <div class="flex-1 overflow-y-auto border rounded-md bg-muted/20">
+            <pre class="p-4 text-sm font-mono"><code>{{ exportedConfig }}</code></pre>
+          </div>
+
+          <!-- 使用说明 -->
+          <div class="space-y-2 text-sm">
+            <p class="font-medium">📋 使用步骤：</p>
+            <ol class="list-decimal list-inside space-y-1 text-muted-foreground ml-2">
+              <li>点击下方"复制配置"按钮</li>
+              <li>打开 Cursor 编辑器</li>
+              <li>按 <kbd class="px-1 py-0.5 text-xs bg-muted rounded">Cmd+Shift+P</kbd> 打开命令面板</li>
+              <li>输入 "Preferences: Open Settings (JSON)"</li>
+              <li>在 JSON 配置中找到或添加 <code class="px-1 py-0.5 bg-muted rounded">mcpServers</code> 字段</li>
+              <li>粘贴配置并保存</li>
+              <li>重启 Cursor 即可使用！</li>
+            </ol>
+          </div>
+
+          <!-- 注意事项 -->
+          <div class="bg-blue-50 dark:bg-blue-950 p-3 rounded-md">
+            <p class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">💡 提示</p>
+            <ul class="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
+              <li>配置已包含工作目录（cwd）和环境变量（env）</li>
+              <li>路径中的 ~ 已自动展开为实际路径</li>
+              <li>确保所有服务器在 MCP Manager 中已成功启动</li>
+              <li>如有 API 密钥等敏感信息，请检查 env 字段</li>
+            </ul>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="showExportDialog = false">
+            关闭
+          </Button>
+          <Button @click="copyConfig">
+            <Download class="h-4 w-4 mr-2" />
+            复制配置
           </Button>
         </DialogFooter>
       </DialogContent>

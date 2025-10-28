@@ -5,7 +5,17 @@ import { configManager } from '../services'
  * 设置配置相关的 IPC 处理器
  */
 export function setupConfigIpc(): void {
-  // 导出配置（Cursor 格式）
+  // 导出单个服务器配置（Cursor 格式）
+  ipcMain.handle('config:exportSingle', async (_, serverId: string) => {
+    try {
+      return configManager.exportSingleForCursor(serverId)
+    } catch (error: any) {
+      console.error('导出单个配置失败:', error)
+      throw error
+    }
+  })
+
+  // 导出所有配置（Cursor 格式）
   ipcMain.handle('config:export', async () => {
     try {
       return configManager.exportForCursor()

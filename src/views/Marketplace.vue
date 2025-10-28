@@ -4,7 +4,7 @@ import { useMarketplaceStore } from '@/stores/marketplace'
 import { useServerStore } from '@/stores/servers'
 import { useSettingsStore } from '@/stores/settings'
 import { useToast } from '@/components/ui/toast/use-toast'
-import { Search, Star, Download, ExternalLink, Github } from 'lucide-vue-next'
+import { Search, Star, Download, ExternalLink, Github, Filter } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -135,7 +135,9 @@ function openExternal(url: string) {
     <div class="w-64 shrink-0 overflow-y-auto">
       <Card>
         <CardHeader>
-          <CardTitle>筛选器</CardTitle>
+          <CardTitle class="flex items-center gap-2">
+            <Filter class="h-5 w-5" />
+          </CardTitle>
         </CardHeader>
         <CardContent class="space-y-6">
           <!-- 分类 -->

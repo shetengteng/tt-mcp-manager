@@ -105,6 +105,7 @@ export interface ElectronAPI {
   }
 
   config: {
+    exportSingle: (serverId: string) => Promise<any>
     export: () => Promise<any>
     exportToFile: (filePath: string) => Promise<{ success: boolean }>
     import: (filePath: string) => Promise<{ success: boolean }>

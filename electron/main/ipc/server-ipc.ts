@@ -100,10 +100,12 @@ export function setupServerIpc(): void {
   // 停止服务器
   ipcMain.handle('server:stop', async (_, serverId: string) => {
     try {
+      console.log('[IPC] 接收到停止请求:', serverId)
       await processManager.stopServer(serverId)
+      console.log('[IPC] 停止操作完成:', serverId)
       return { success: true }
     } catch (error: any) {
-      console.error(`停止服务器失败 [${serverId}]:`, error)
+      console.error(`[IPC] 停止服务器失败 [${serverId}]:`, error)
       return { success: false, error: error.message }
     }
   })

@@ -56,6 +56,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 配置管理
   config: {
+    exportSingle: (serverId: string) => ipcRenderer.invoke('config:exportSingle', serverId),
     export: () => ipcRenderer.invoke('config:export'),
     exportToFile: (filePath: string) => ipcRenderer.invoke('config:exportToFile', filePath),
     import: (filePath: string) => ipcRenderer.invoke('config:import', filePath)

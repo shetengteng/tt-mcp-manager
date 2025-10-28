@@ -187,21 +187,75 @@ export class ConfigManager {
   }
 
   /**
-   * 导出配置（Cursor 格式）
+   * 导出单个服务器配置（Cursor 格式）
    */
-  exportForCursor(): CursorConfig {
+  exportSingleForCursor(serverId: string): CursorConfig {
+    const config = this.servers.get(serverId)
+    if (!config) {
+      throw new Error(`服务器 ${serverId} 不存在`)
+    }
+
+    const os = require('os')
     const mcpServers: Record<string, {
       command: string
       args: string[]
       env?: Record<string, string>
+      cwd?: string
+    }> = {}
+
+    // 使用服务器名称作为键（转换为小写，替换空格和特殊字符）
+    const key = config.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+    
+    mcpServers[key] = {
+      command: config.command,
+      args: config.args
+    }
+
+    // 如果有工作目录，展开 ~ 并添加
+    if (config.workingDirectory) {
+      const expandedPath = config.workingDirectory.replace(/^~/, os.homedir())
+      mcpServers[key].cwd = expandedPath
+    }
+
+    // 如果有环境变量，添加到配置中
+    if (config.env && Object.keys(config.env).length > 0) {
+      mcpServers[key].env = config.env
+    }
+
+    return { mcpServers }
+  }
+
+  /**
+   * 导出所有服务器配置（Cursor 格式）
+   */
+  exportForCursor(): CursorConfig {
+    const os = require('os')
+    const mcpServers: Record<string, {
+      command: string
+      args: string[]
+      env?: Record<string, string>
+      cwd?: string
     }> = {}
 
     this.servers.forEach((config, id) => {
-      // 使用服务器名称作为键（转换为小写，替换空格）
-      const key = config.name.toLowerCase().replace(/\s+/g, '-')
+      // 使用服务器名称作为键（转换为小写，替换空格和特殊字符）
+      const key = config.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+      
       mcpServers[key] = {
         command: config.command,
         args: config.args
+      }
+
+      // 如果有工作目录，展开 ~ 并添加
+      if (config.workingDirectory) {
+        const expandedPath = config.workingDirectory.replace(/^~/, os.homedir())
+        mcpServers[key].cwd = expandedPath
       }
 
       // 如果有环境变量，添加到配置中

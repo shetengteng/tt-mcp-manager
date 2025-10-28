@@ -133,6 +133,9 @@ tt-mcp-manager/
 - [Shadcn 迁移指南](./docs/SHADCN_MIGRATION.md) - Shadcn-Vue 组件迁移详解
 - [组件迁移总结](./docs/COMPONENT_MIGRATION_SUMMARY.md) - 组件迁移对比和示例
 
+### 使用指南
+- [Cursor 集成指南](./docs/cursor-integration.md) - 如何在 Cursor 中使用 MCP Manager
+
 ## License
 
 MIT
