@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useServerStore } from '@/stores/servers'
 import { useLogStore } from '@/stores/logs'
@@ -38,10 +38,30 @@ const currentServerLogsName = ref('')
 const showExportDialog = ref(false)
 const exportedConfig = ref('')
 
+// 计算错误服务器数量
+const errorServers = computed(() => {
+  return serverStore.servers.filter(s => {
+    const status = serverStore.serverStatuses[s.id]
+    return status?.status === 'error'
+  })
+})
+
 // 加载数据
 onMounted(async () => {
   await serverStore.loadServers()
   logStore.subscribeToLogs()
+  
+  // 定时刷新状态（每5秒）
+  const refreshInterval = setInterval(async () => {
+    if (!serverStore.loading) {
+      await serverStore.refreshStatuses()
+    }
+  }, 5000)
+  
+  // 清理定时器
+  onUnmounted(() => {
+    clearInterval(refreshInterval)
+  })
 })
 
 // 打开删除确认对话框
@@ -158,6 +178,39 @@ function isServerRunning(serverId: string) {
   return status?.status === 'running'
 }
 
+// 判断服务器是否处于错误状态
+function isServerError(serverId: string) {
+  const status = getServerStatus(serverId)
+  return status?.status === 'error'
+}
+
+// 获取服务器状态文本
+function getServerStatusText(serverId: string) {
+  const status = getServerStatus(serverId)
+  if (!status) return '未知'
+  
+  switch (status.status) {
+    case 'running': return '运行中'
+    case 'stopped': return '已停止'
+    case 'error': return '错误'
+    case 'restarting': return '重启中'
+    default: return status.status
+  }
+}
+
+// 获取状态指示器颜色
+function getStatusColor(serverId: string) {
+  const status = getServerStatus(serverId)
+  if (!status) return 'bg-gray-300'
+  
+  switch (status.status) {
+    case 'running': return 'bg-green-500 animate-pulse'
+    case 'error': return 'bg-red-500 animate-pulse'
+    case 'restarting': return 'bg-yellow-500 animate-pulse'
+    default: return 'bg-gray-300'
+  }
+}
+
 // 查看服务器日志
 async function viewServerLogs(serverId: string, serverName: string) {
   try {
@@ -178,9 +231,9 @@ async function viewServerLogs(serverId: string, serverName: string) {
 
 // 获取格式化的日志文本
 function getFormattedLogs(serverId: string) {
-  const logs = logStore.logs[serverId] || []
+  const logs = logStore.getServerLogs(serverId)
   if (logs.length === 0) {
-    return '暂无日志输出'
+    return '暂无日志输出\n\n💡 提示：\n- 如果服务器刚启动，日志可能需要几秒钟才会出现\n- 如果服务器启动失败，可能不会有日志输出\n- 请检查服务器是否正在运行（绿色指示器）'
   }
   return logs.map(log => {
     const time = new Date(log.timestamp).toLocaleTimeString()
@@ -249,7 +302,7 @@ async function exportSingleServer(serverId: string, serverName: string) {
 <template>
   <div class="flex flex-col">
     <!-- 统计卡片 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <Card>
         <CardHeader class="pb-2">
           <CardTitle class="text-sm font-medium text-muted-foreground">服务器总数</CardTitle>
@@ -270,11 +323,20 @@ async function exportSingleServer(serverId: string, serverName: string) {
 
       <Card>
         <CardHeader class="pb-2">
+          <CardTitle class="text-sm font-medium text-muted-foreground">错误</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="text-2xl font-bold text-red-600">{{ errorServers.length }}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader class="pb-2">
           <CardTitle class="text-sm font-medium text-muted-foreground">已停止</CardTitle>
         </CardHeader>
         <CardContent>
           <div class="text-2xl font-bold text-gray-500">
-            {{ serverStore.servers.length - serverStore.runningServers.length }}
+            {{ serverStore.servers.length - serverStore.runningServers.length - errorServers.length }}
           </div>
         </CardContent>
       </Card>
@@ -338,15 +400,34 @@ async function exportSingleServer(serverId: string, serverName: string) {
                     <!-- 运行状态指示器 -->
                     <div 
                       class="w-2 h-2 rounded-full"
-                      :class="isServerRunning(server.id) ? 'bg-green-500 animate-pulse' : 'bg-gray-300'"
+                      :class="getStatusColor(server.id)"
+                      :title="getServerStatusText(server.id)"
                     ></div>
                     <h4 class="font-medium">{{ server.name }}</h4>
                     <Badge>{{ server.type }}</Badge>
-                    <Badge v-if="isServerRunning(server.id)" variant="default" class="text-xs">运行中</Badge>
+                    <Badge 
+                      v-if="isServerRunning(server.id)" 
+                      variant="default" 
+                      class="text-xs"
+                    >
+                      运行中
+                    </Badge>
+                    <Badge 
+                      v-else-if="isServerError(server.id)" 
+                      variant="destructive" 
+                      class="text-xs"
+                    >
+                      错误
+                    </Badge>
                   </div>
                   <p class="text-sm text-muted-foreground">{{ server.command }}</p>
                 </div>
                 <div class="flex gap-2">
+                  <!-- 如果是错误状态，显示错误提示 -->
+                  <div v-if="isServerError(server.id)" class="flex items-center gap-2 mr-2">
+                    <span class="text-xs text-destructive">启动失败</span>
+                  </div>
+                  
                   <Button
                     size="sm"
                     variant="default"
@@ -367,10 +448,10 @@ async function exportSingleServer(serverId: string, serverName: string) {
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
+                    :variant="isServerError(server.id) ? 'destructive' : 'outline'"
                     :disabled="isServerOperating(server.id)"
                     @click.stop="viewServerLogs(server.id, server.name)"
-                    title="查看日志"
+                    :title="isServerError(server.id) ? '查看错误日志' : '查看日志'"
                   >
                     <FileText class="h-4 w-4" />
                   </Button>
@@ -447,8 +528,8 @@ async function exportSingleServer(serverId: string, serverName: string) {
 
     <!-- 日志查看对话框 -->
     <Dialog v-model:open="showLogsDialog">
-      <DialogContent class="max-w-4xl max-h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent class="max-w-4xl h-[80vh] flex flex-col">
+        <DialogHeader class="shrink-0">
           <DialogTitle class="flex items-center gap-2">
             <FileText class="h-5 w-5" />
             {{ currentServerLogsName }} - 运行日志
@@ -458,13 +539,13 @@ async function exportSingleServer(serverId: string, serverName: string) {
           </DialogDescription>
         </DialogHeader>
 
-        <div class="flex-1 overflow-hidden">
+        <div class="flex-1 min-h-0 overflow-hidden">
           <div class="h-full overflow-y-auto border rounded-md bg-black/90 p-4">
-            <pre class="text-xs font-mono text-green-400 whitespace-pre-wrap">{{ currentServerLogs ? getFormattedLogs(currentServerLogs) : '暂无日志输出' }}</pre>
+            <pre class="text-xs font-mono text-green-400 whitespace-pre-wrap break-words">{{ currentServerLogs ? getFormattedLogs(currentServerLogs) : '暂无日志输出' }}</pre>
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter class="shrink-0">
           <Button variant="outline" @click="showLogsDialog = false">
             关闭
           </Button>

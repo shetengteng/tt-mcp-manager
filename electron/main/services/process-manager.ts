@@ -13,6 +13,8 @@ import type {
 export class ProcessManager extends EventEmitter {
   // 存储所有运行中的进程
   private processes: Map<string, MCPServerProcess> = new Map()
+  // 存储错误服务器的状态（即使进程已退出也保留）
+  private errorStates: Map<string, { status: 'error'; timestamp: Date; reason?: string }> = new Map()
 
   /**
    * 启动 MCP Server
@@ -45,6 +47,12 @@ export class ProcessManager extends EventEmitter {
         console.log(`[ProcessManager] 清理僵尸进程记录: ${config.id}`)
         this.processes.delete(config.id)
       }
+    }
+
+    // 清除之前的错误状态（如果有）
+    if (this.errorStates.has(config.id)) {
+      this.errorStates.delete(config.id)
+      console.log(`[ProcessManager] 清除之前的错误状态: ${config.id}`)
     }
 
     console.log(`[ProcessManager] 启动服务器: ${config.name} (${config.id})`)
@@ -127,6 +135,12 @@ export class ProcessManager extends EventEmitter {
     console.log(`[ProcessManager] 当前进程 Map 大小: ${this.processes.size}`)
     console.log(`[ProcessManager] Map 中的所有进程 ID:`, Array.from(this.processes.keys()))
     
+    // 清除错误状态（如果有）
+    if (this.errorStates.has(serverId)) {
+      this.errorStates.delete(serverId)
+      console.log(`[ProcessManager] 清除错误状态: ${serverId}`)
+    }
+    
     const mcpProcess = this.processes.get(serverId)
     if (!mcpProcess) {
       console.log(`[ProcessManager] ⚠️ 服务器 ${serverId} 不存在或已停止，跳过`)
@@ -204,6 +218,13 @@ export class ProcessManager extends EventEmitter {
     uptime?: number
     pid?: number
   } {
+    // 首先检查是否有错误状态
+    const errorState = this.errorStates.get(serverId)
+    if (errorState) {
+      console.log(`[ProcessManager] 服务器 ${serverId} 处于错误状态`)
+      return { status: 'error' }
+    }
+
     const mcpProcess = this.processes.get(serverId)
     if (!mcpProcess) {
       console.log(`[ProcessManager] 服务器 ${serverId} 不存在，返回 stopped`)
@@ -261,16 +282,72 @@ export class ProcessManager extends EventEmitter {
     const message = data.toString().trim()
     if (!message) return
 
-    console.error(`[ProcessManager] ⚠️ [${serverId}] stderr:`, message)
+    // 智能判断日志级别
+    // 很多 MCP Server 的正常日志也会输出到 stderr
+    const level = this.determineLogLevel(message)
+    
+    if (level === 'error') {
+      console.error(`[ProcessManager] ❌ [${serverId}] stderr:`, message)
+    } else if (level === 'warn') {
+      console.warn(`[ProcessManager] ⚠️ [${serverId}] stderr:`, message)
+    } else {
+      console.log(`[ProcessManager] ℹ️ [${serverId}] stderr:`, message)
+    }
 
     // 触发日志事件
     this.emit('log:new', {
       serverId,
       timestamp: new Date(),
-      level: 'error',
+      level,
       message,
       source: 'stderr'
     })
+  }
+
+  /**
+   * 根据消息内容判断日志级别
+   */
+  private determineLogLevel(message: string): 'info' | 'warn' | 'error' {
+    const lowerMessage = message.toLowerCase()
+
+    // 正常信息的关键词
+    const infoKeywords = [
+      'running on stdio',
+      'server started',
+      'listening on',
+      'connected',
+      'initialized',
+      'ready',
+      'starting'
+    ]
+
+    // 错误的关键词
+    const errorKeywords = [
+      'error:',
+      'failed:',
+      'exception:',
+      'fatal:',
+      'uncaught',
+      'unhandled',
+      'cannot',
+      'not found',
+      'enoent',
+      'eacces',
+      'permission denied'
+    ]
+
+    // 检查是否是错误
+    if (errorKeywords.some(keyword => lowerMessage.includes(keyword))) {
+      return 'error'
+    }
+
+    // 检查是否是正常信息
+    if (infoKeywords.some(keyword => lowerMessage.includes(keyword))) {
+      return 'info'
+    }
+
+    // 默认作为警告
+    return 'warn'
   }
 
   /**
@@ -299,36 +376,60 @@ export class ProcessManager extends EventEmitter {
       if (restartCount <= mcpProcess.config.maxRestarts) {
         console.log(`[ProcessManager] 自动重启服务器 [${serverId}] (${restartCount}/${mcpProcess.config.maxRestarts})`)
 
-        // 更新重启次数
+        // 更新重启次数（关键：在重启前更新，而不是在新进程中重置）
         mcpProcess.restartCount = restartCount
         mcpProcess.status = 'restarting'
 
         // 延迟 2 秒后重启
         setTimeout(() => {
+          // 保存重启次数
+          const savedRestartCount = mcpProcess.restartCount
           // 先删除旧进程记录
           this.processes.delete(serverId)
-          // 重新启动
-          this.startServer(mcpProcess.config).catch(error => {
+          // 重新启动，并传递重启次数
+          const config = { ...mcpProcess.config }
+          this.startServer(config).then(() => {
+            // 启动成功后，恢复重启次数
+            const newProcess = this.processes.get(serverId)
+            if (newProcess) {
+              newProcess.restartCount = savedRestartCount
+            }
+          }).catch(error => {
             console.error(`[ProcessManager] 重启失败 [${serverId}]:`, error)
           })
         }, 2000)
 
         return
       } else {
-        console.error(`[ProcessManager] 达到最大重启次数 [${serverId}]`)
+        console.error(`[ProcessManager] ❌ 达到最大重启次数 [${serverId}]，停止自动重启`)
+        // 设置为错误状态
+        mcpProcess.status = 'error'
       }
     }
 
+    // 决定最终状态
+    const finalStatus = mcpProcess.status === 'error' ? 'error' : (code !== 0 ? 'error' : 'stopped')
+    
+    // 如果是错误状态，保存到 errorStates
+    if (finalStatus === 'error') {
+      this.errorStates.set(serverId, {
+        status: 'error',
+        timestamp: new Date(),
+        reason: `进程异常退出，退出码: ${code}`
+      })
+      console.log(`[ProcessManager] 保存错误状态: ${serverId}`)
+    }
+    
     // 清理进程（如果还在 Map 中）
     if (this.processes.has(serverId)) {
       this.processes.delete(serverId)
-      console.log(`[ProcessManager] 已清理进程记录: ${serverId}`)
+      console.log(`[ProcessManager] 已清理进程记录: ${serverId}，最终状态: ${finalStatus}`)
     }
 
     // 触发退出事件
     this.emit('server:status', {
       serverId,
-      status: 'stopped',
+      status: finalStatus,
       timestamp: new Date()
     })
   }
@@ -349,6 +450,8 @@ export class ProcessManager extends EventEmitter {
   async stopAll(): Promise<void> {
     const serverIds = Array.from(this.processes.keys())
     await Promise.all(serverIds.map(id => this.stopServer(id).catch(console.error)))
+    // 清除所有错误状态
+    this.errorStates.clear()
   }
 }
 

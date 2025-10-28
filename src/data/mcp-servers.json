@@ -120,23 +120,6 @@
       "topics": ["mcp", "search", "brave", "web"]
     },
     {
-      "id": 8,
-      "name": "@modelcontextprotocol/server-fetch",
-      "displayName": "Fetch Server",
-      "description": "MCP server for making HTTP requests - GET, POST, and other HTTP methods with customizable headers",
-      "category": ["Web服务"],
-      "language": "TypeScript",
-      "stars": 850,
-      "homepage": "https://github.com/modelcontextprotocol/servers",
-      "githubUrl": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
-      "npmPackage": "@modelcontextprotocol/server-fetch",
-      "installCommand": "npx -y @modelcontextprotocol/server-fetch",
-      "author": "Anthropic",
-      "license": "MIT",
-      "official": true,
-      "topics": ["mcp", "http", "fetch", "api"]
-    },
-    {
       "id": 9,
       "name": "@modelcontextprotocol/server-git",
       "displayName": "Git Server",
@@ -172,23 +155,6 @@
     },
     {
       "id": 11,
-      "name": "@modelcontextprotocol/server-sqlite",
-      "displayName": "SQLite Server",
-      "description": "MCP server for SQLite database operations with schema analysis and query execution",
-      "category": ["数据平台"],
-      "language": "TypeScript",
-      "stars": 850,
-      "homepage": "https://github.com/modelcontextprotocol/servers",
-      "githubUrl": "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite",
-      "npmPackage": "@modelcontextprotocol/server-sqlite",
-      "installCommand": "npx -y @modelcontextprotocol/server-sqlite [db-path]",
-      "author": "Anthropic",
-      "license": "MIT",
-      "official": true,
-      "topics": ["mcp", "sqlite", "database", "sql"]
-    },
-    {
-      "id": 12,
       "name": "@modelcontextprotocol/server-sentry",
       "displayName": "Sentry Server",
       "description": "MCP server for Sentry error tracking - query issues, events, and project statistics",
@@ -205,7 +171,7 @@
       "topics": ["mcp", "sentry", "error-tracking", "monitoring"]
     },
     {
-      "id": 13,
+      "id": 12,
       "name": "mcp-server-docker",
       "displayName": "Docker Server",
       "description": "MCP server for Docker container management - list, start, stop, and inspect containers and images",
@@ -221,7 +187,7 @@
       "topics": ["mcp", "docker", "containers"]
     },
     {
-      "id": 14,
+      "id": 13,
       "name": "mcp-server-kubernetes",
       "displayName": "Kubernetes Server",
       "description": "MCP server for Kubernetes cluster management - pods, services, deployments, and logs",
@@ -237,7 +203,7 @@
       "topics": ["mcp", "kubernetes", "k8s", "devops"]
     },
     {
-      "id": 15,
+      "id": 14,
       "name": "mcp-server-youtube-transcript",
       "displayName": "YouTube Transcript Server",
       "description": "MCP server for fetching YouTube video transcripts and captions",
@@ -253,7 +219,7 @@
       "topics": ["mcp", "youtube", "transcript", "captions"]
     },
     {
-      "id": 16,
+      "id": 15,
       "name": "mcp-server-aws",
       "displayName": "AWS Server",
       "description": "MCP server for AWS services - S3, EC2, Lambda, and more cloud operations",
@@ -269,7 +235,7 @@
       "topics": ["mcp", "aws", "cloud", "s3", "ec2"]
     },
     {
-      "id": 17,
+      "id": 16,
       "name": "mcp-server-obsidian",
       "displayName": "Obsidian Server",
       "description": "MCP server for Obsidian vault operations - read, write, and search notes",
@@ -286,7 +252,7 @@
       "topics": ["mcp", "obsidian", "notes", "markdown"]
     },
     {
-      "id": 18,
+      "id": 17,
       "name": "mcp-server-sequential-thinking",
       "displayName": "Sequential Thinking Server",
       "description": "MCP server enabling advanced reasoning through structured thinking processes",
@@ -302,7 +268,7 @@
       "topics": ["mcp", "reasoning", "thinking", "ai"]
     },
     {
-      "id": 19,
+      "id": 18,
       "name": "mcp-server-playwright",
       "displayName": "Playwright Server",
       "description": "MCP server for Playwright browser automation and testing",
