@@ -133,6 +133,22 @@ export function setupServerIpc(): void {
     }
   })
 
+  // 测试服务器
+  ipcMain.handle('server:test', async (_, serverId: string) => {
+    try {
+      console.log('[IPC] 接收到测试请求:', serverId)
+      const result = await processManager.testServer(serverId)
+      console.log('[IPC] 测试结果:', result)
+      return result
+    } catch (error: any) {
+      console.error(`[IPC] 测试服务器失败 [${serverId}]:`, error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  })
+
   console.log('✓ 服务器 IPC 处理器设置完成')
 }
 

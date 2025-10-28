@@ -17,7 +17,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     start: (id: string) => ipcRenderer.invoke('server:start', id),
     stop: (id: string) => ipcRenderer.invoke('server:stop', id),
     restart: (id: string) => ipcRenderer.invoke('server:restart', id),
-    getStatus: (id: string) => ipcRenderer.invoke('server:getStatus', id)
+    getStatus: (id: string) => ipcRenderer.invoke('server:getStatus', id),
+    test: (id: string) => ipcRenderer.invoke('server:test', id)
   },
 
   // 日志管理

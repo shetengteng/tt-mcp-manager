@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useServerStore } from '@/stores/servers'
 import { useLogStore } from '@/stores/logs'
 import { useToast } from '@/components/ui/toast/use-toast'
-import { ShoppingBag, Play, Pause, Plus, Trash2, Terminal, ExternalLink, Download, FileText } from 'lucide-vue-next'
+import { ShoppingBag, Play, Pause, Plus, Trash2, Download, FileText, TestTube2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,6 +37,21 @@ const currentServerLogsName = ref('')
 // 导出配置对话框
 const showExportDialog = ref(false)
 const exportedConfig = ref('')
+
+// 测试对话框
+const showTestDialog = ref(false)
+const testingServer = ref<string | null>(null)
+const testingServerName = ref('')
+const testResult = ref<{
+  success: boolean
+  capabilities?: {
+    tools?: string[]
+    resources?: string[]
+    prompts?: string[]
+  }
+  error?: string
+} | null>(null)
+const isTesting = ref(false)
 
 // 计算错误服务器数量
 const errorServers = computed(() => {
@@ -297,6 +312,48 @@ async function exportSingleServer(serverId: string, serverName: string) {
     })
   }
 }
+
+// 测试服务器功能
+async function testServer(serverId: string, serverName: string) {
+  testingServer.value = serverId
+  testingServerName.value = serverName
+  testResult.value = null
+  isTesting.value = true
+  showTestDialog.value = true
+
+  try {
+    console.log('🧪 开始测试服务器:', serverId, serverName)
+    const result = await window.electronAPI.server.test(serverId)
+    console.log('🧪 测试结果:', result)
+    testResult.value = result
+
+    if (result.success) {
+      toast({
+        title: '✅ 测试成功',
+        description: `${serverName} 正常响应`,
+      })
+    } else {
+      toast({
+        title: '❌ 测试失败',
+        description: result.error || '服务器未响应',
+        variant: 'destructive',
+      })
+    }
+  } catch (error: any) {
+    console.error('🧪 测试异常:', error)
+    testResult.value = {
+      success: false,
+      error: error.message || '测试请求失败'
+    }
+    toast({
+      title: '测试失败',
+      description: error.message || '测试服务器时发生错误',
+      variant: 'destructive',
+    })
+  } finally {
+    isTesting.value = false
+  }
+}
 </script>
 
 <template>
@@ -458,6 +515,15 @@ async function exportSingleServer(serverId: string, serverName: string) {
                   <Button
                     size="sm"
                     variant="outline"
+                    :disabled="!isServerRunning(server.id) || isServerOperating(server.id)"
+                    @click.stop="testServer(server.id, server.name)"
+                    title="测试功能"
+                  >
+                    <TestTube2 class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     :disabled="isServerOperating(server.id)"
                     @click.stop="exportSingleServer(server.id, server.name)"
                     title="导出配置"
@@ -602,6 +668,148 @@ async function exportSingleServer(serverId: string, serverName: string) {
           <Button @click="copyConfig">
             <Download class="h-4 w-4 mr-2" />
             复制配置
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- 测试结果对话框 -->
+    <Dialog v-model:open="showTestDialog">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2">
+            <TestTube2 class="h-5 w-5" />
+            {{ testingServerName }} - 功能测试
+          </DialogTitle>
+          <DialogDescription>
+            检查 MCP Server 是否正常响应并查看支持的功能
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4">
+          <!-- 测试中 -->
+          <div v-if="isTesting" class="flex items-center justify-center py-8">
+            <div class="flex flex-col items-center gap-3">
+              <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+              <p class="text-sm text-muted-foreground">正在测试服务器...</p>
+            </div>
+          </div>
+
+          <!-- 测试结果 -->
+          <div v-else-if="testResult" class="space-y-4">
+            <!-- 成功 -->
+            <div v-if="testResult.success" class="space-y-4">
+              <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+                <div class="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400"></div>
+                <span class="font-medium">✅ 服务器响应正常</span>
+              </div>
+
+              <!-- 支持的功能 -->
+              <div v-if="testResult.capabilities" class="space-y-3">
+                <!-- Tools -->
+                <div v-if="testResult.capabilities.tools && testResult.capabilities.tools.length > 0">
+                  <h4 class="text-sm font-medium mb-2">🔧 支持的工具 ({{ testResult.capabilities.tools.length }})</h4>
+                  <div class="bg-muted p-3 rounded-md max-h-40 overflow-y-auto">
+                    <div class="space-y-1">
+                      <Badge 
+                        v-for="tool in testResult.capabilities.tools" 
+                        :key="tool"
+                        variant="secondary"
+                        class="mr-2 mb-1"
+                      >
+                        {{ tool }}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Resources -->
+                <div v-if="testResult.capabilities.resources && testResult.capabilities.resources.length > 0">
+                  <h4 class="text-sm font-medium mb-2">📦 支持的资源 ({{ testResult.capabilities.resources.length }})</h4>
+                  <div class="bg-muted p-3 rounded-md max-h-40 overflow-y-auto">
+                    <div class="space-y-1">
+                      <Badge 
+                        v-for="resource in testResult.capabilities.resources" 
+                        :key="resource"
+                        variant="secondary"
+                        class="mr-2 mb-1"
+                      >
+                        {{ resource }}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Prompts -->
+                <div v-if="testResult.capabilities.prompts && testResult.capabilities.prompts.length > 0">
+                  <h4 class="text-sm font-medium mb-2">💬 支持的提示 ({{ testResult.capabilities.prompts.length }})</h4>
+                  <div class="bg-muted p-3 rounded-md max-h-40 overflow-y-auto">
+                    <div class="space-y-1">
+                      <Badge 
+                        v-for="prompt in testResult.capabilities.prompts" 
+                        :key="prompt"
+                        variant="secondary"
+                        class="mr-2 mb-1"
+                      >
+                        {{ prompt }}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 无功能 -->
+                <div v-if="!testResult.capabilities.tools?.length && !testResult.capabilities.resources?.length && !testResult.capabilities.prompts?.length">
+                  <p class="text-sm text-muted-foreground">服务器未返回功能列表</p>
+                </div>
+              </div>
+
+              <!-- 提示 -->
+              <div class="bg-green-50 dark:bg-green-950 p-3 rounded-md">
+                <p class="text-sm text-green-700 dark:text-green-300">
+                  ✅ 服务器已通过测试，可以在 Cursor 中使用
+                </p>
+              </div>
+            </div>
+
+            <!-- 失败 -->
+            <div v-else class="space-y-4">
+              <div class="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div class="w-3 h-3 rounded-full bg-red-600 dark:bg-red-400"></div>
+                <span class="font-medium">❌ 测试失败</span>
+              </div>
+
+              <div class="bg-red-50 dark:bg-red-950 p-3 rounded-md">
+                <p class="text-sm font-medium text-red-900 dark:text-red-100 mb-1">错误信息</p>
+                <p class="text-sm text-red-700 dark:text-red-300 font-mono">
+                  {{ testResult.error }}
+                </p>
+              </div>
+
+              <div class="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-md">
+                <p class="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-1">💡 排查建议</p>
+                <ul class="text-xs text-yellow-700 dark:text-yellow-300 space-y-1 list-disc list-inside">
+                  <li>检查服务器是否正在运行（绿色指示器）</li>
+                  <li>查看日志输出是否有错误信息</li>
+                  <li>确认命令和参数配置正确</li>
+                  <li>检查工作目录是否存在</li>
+                  <li>尝试重启服务器</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="showTestDialog = false">
+            关闭
+          </Button>
+          <Button 
+            v-if="testResult && !testResult.success"
+            variant="default"
+            @click="viewServerLogs(testingServer!, testingServerName)"
+          >
+            <FileText class="h-4 w-4 mr-2" />
+            查看日志
           </Button>
         </DialogFooter>
       </DialogContent>

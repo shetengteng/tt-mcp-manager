@@ -250,6 +250,130 @@ export class ProcessManager extends EventEmitter {
   }
 
   /**
+   * 测试 MCP Server 功能
+   */
+  async testServer(serverId: string): Promise<{
+    success: boolean
+    capabilities?: {
+      tools?: string[]
+      resources?: string[]
+      prompts?: string[]
+    }
+    error?: string
+  }> {
+    const mcpProcess = this.processes.get(serverId)
+    if (!mcpProcess || mcpProcess.status !== 'running') {
+      return {
+        success: false,
+        error: '服务器未运行'
+      }
+    }
+
+    try {
+      console.log(`[ProcessManager] 测试服务器: ${serverId}`)
+      
+      // 发送 tools/list 请求
+      const toolsRequest = {
+        jsonrpc: '2.0',
+        id: Date.now(),
+        method: 'tools/list',
+        params: {}
+      }
+
+      // 创建响应 Promise
+      const responsePromise = new Promise<any>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          clearTimeout(timeout)
+          mcpProcess.process.stdout?.removeListener('data', onData)
+          reject(new Error('测试超时（10秒）'))
+        }, 10000)
+
+        // 累积的数据缓冲区
+        let buffer = ''
+
+        // 监听一次性响应
+        const onData = (data: Buffer) => {
+          try {
+            // 将新数据追加到缓冲区
+            buffer += data.toString()
+            
+            // 尝试从缓冲区提取完整的 JSON 行
+            const lines = buffer.split('\n')
+            
+            // 保留最后一个不完整的行
+            buffer = lines.pop() || ''
+            
+            // 处理完整的行
+            for (const line of lines) {
+              const trimmedLine = line.trim()
+              if (!trimmedLine) continue
+              
+              try {
+                const response = JSON.parse(trimmedLine)
+                // 检查是否是我们期待的响应
+                if (response.id === toolsRequest.id) {
+                  clearTimeout(timeout)
+                  mcpProcess.process.stdout?.removeListener('data', onData)
+                  resolve(response)
+                  return
+                }
+              } catch (e) {
+                // 忽略非 JSON 行
+                console.log(`[ProcessManager] 忽略非 JSON 行: ${trimmedLine.substring(0, 100)}...`)
+              }
+            }
+          } catch (error) {
+            console.error(`[ProcessManager] 处理响应数据时出错:`, error)
+          }
+        }
+
+        mcpProcess.process.stdout?.on('data', onData)
+      })
+
+      // 发送请求
+      mcpProcess.process.stdin?.write(JSON.stringify(toolsRequest) + '\n')
+
+      // 等待响应
+      const response = await responsePromise
+
+      console.log(`[ProcessManager] 测试响应:`, response)
+
+      if (response.error) {
+        return {
+          success: false,
+          error: response.error.message || '服务器返回错误'
+        }
+      }
+
+      // 解析功能
+      const capabilities: any = {}
+
+      if (response.result?.tools) {
+        capabilities.tools = response.result.tools.map((t: any) => t.name || t)
+      }
+
+      if (response.result?.resources) {
+        capabilities.resources = response.result.resources.map((r: any) => r.name || r)
+      }
+
+      if (response.result?.prompts) {
+        capabilities.prompts = response.result.prompts.map((p: any) => p.name || p)
+      }
+
+      return {
+        success: true,
+        capabilities
+      }
+    } catch (error: any) {
+      console.error(`[ProcessManager] 测试失败 [${serverId}]:`, error)
+      return {
+        success: false,
+        error: error.message || '测试请求失败'
+      }
+    }
+  }
+
+  /**
    * 获取所有进程
    */
   getAllProcesses(): MCPServerProcess[] {

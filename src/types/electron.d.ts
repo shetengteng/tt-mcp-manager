@@ -76,6 +76,15 @@ export interface ElectronAPI {
     stop: (id: string) => Promise<{ success: boolean }>
     restart: (id: string) => Promise<{ success: boolean }>
     getStatus: (id: string) => Promise<{ status: string; uptime?: number }>
+    test: (id: string) => Promise<{
+      success: boolean
+      capabilities?: {
+        tools?: string[]
+        resources?: string[]
+        prompts?: string[]
+      }
+      error?: string
+    }>
   }
 
   log: {
