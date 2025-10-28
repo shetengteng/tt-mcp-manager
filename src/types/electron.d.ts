@@ -118,6 +118,8 @@ export interface ElectronAPI {
     export: () => Promise<any>
     exportToFile: (filePath: string) => Promise<{ success: boolean }>
     import: (filePath: string) => Promise<{ success: boolean }>
+    syncSingleToCursor: (serverId: string) => Promise<{ success: boolean; message: string }>
+    syncToCursor: () => Promise<{ success: boolean; message: string }>
   }
 
   settings: {

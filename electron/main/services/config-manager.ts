@@ -294,6 +294,145 @@ export class ConfigManager {
   }
 
   /**
+   * 同步单个服务器配置到 Cursor
+   */
+  async syncSingleToCursor(serverId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const os = require('os')
+      const path = require('path')
+      
+      // 获取服务器配置
+      const config = this.getConfig(serverId)
+      if (!config) {
+        return {
+          success: false,
+          message: '服务器配置不存在'
+        }
+      }
+      
+      // Cursor 配置文件路径
+      const cursorConfigPath = path.join(os.homedir(), '.cursor', 'mcp.json')
+      
+      console.log('[ConfigManager] 同步单个服务器到 Cursor:', config.name)
+      
+      // 读取现有的 Cursor 配置
+      let cursorConfig: any = { mcpServers: {} }
+      try {
+        const content = await fs.readFile(cursorConfigPath, 'utf-8')
+        cursorConfig = JSON.parse(content)
+      } catch (error) {
+        console.log('[ConfigManager] Cursor 配置文件不存在，将创建新文件')
+      }
+      
+      // 获取单个服务器的配置
+      const singleConfig = this.exportSingleForCursor(serverId)
+      
+      // 合并到 Cursor 配置
+      const mergedConfig = {
+        ...cursorConfig,
+        mcpServers: {
+          ...cursorConfig.mcpServers,
+          ...singleConfig.mcpServers
+        }
+      }
+      
+      // 确保 .cursor 目录存在
+      const cursorDir = path.join(os.homedir(), '.cursor')
+      try {
+        await fs.access(cursorDir)
+      } catch {
+        await fs.mkdir(cursorDir, { recursive: true })
+      }
+      
+      // 写入配置文件
+      await fs.writeFile(
+        cursorConfigPath,
+        JSON.stringify(mergedConfig, null, 2),
+        'utf-8'
+      )
+      
+      console.log('[ConfigManager] 成功同步单个服务器到 Cursor:', config.name)
+      
+      return {
+        success: true,
+        message: `已同步 ${config.name} 到 Cursor`
+      }
+    } catch (error: any) {
+      console.error('[ConfigManager] 同步单个服务器到 Cursor 失败:', error)
+      return {
+        success: false,
+        message: `同步失败: ${error.message}`
+      }
+    }
+  }
+
+  /**
+   * 同步配置到 Cursor
+   */
+  async syncToCursor(): Promise<{ success: boolean; message: string }> {
+    try {
+      const os = require('os')
+      const path = require('path')
+      
+      // Cursor 配置文件路径
+      const cursorConfigPath = path.join(os.homedir(), '.cursor', 'mcp.json')
+      
+      console.log('[ConfigManager] Cursor 配置路径:', cursorConfigPath)
+      
+      // 读取现有的 Cursor 配置
+      let cursorConfig: any = { mcpServers: {} }
+      try {
+        const content = await fs.readFile(cursorConfigPath, 'utf-8')
+        cursorConfig = JSON.parse(content)
+        console.log('[ConfigManager] 读取到现有 Cursor 配置')
+      } catch (error) {
+        console.log('[ConfigManager] Cursor 配置文件不存在，将创建新文件')
+      }
+      
+      // 获取我们的配置
+      const ourConfig = this.exportForCursor()
+      
+      // 合并配置（保留 Cursor 中其他的配置，更新我们管理的）
+      const mergedConfig = {
+        ...cursorConfig,
+        mcpServers: {
+          ...cursorConfig.mcpServers,
+          ...ourConfig.mcpServers
+        }
+      }
+      
+      // 确保 .cursor 目录存在
+      const cursorDir = path.join(os.homedir(), '.cursor')
+      try {
+        await fs.access(cursorDir)
+      } catch {
+        await fs.mkdir(cursorDir, { recursive: true })
+        console.log('[ConfigManager] 创建 .cursor 目录')
+      }
+      
+      // 写入配置文件
+      await fs.writeFile(
+        cursorConfigPath,
+        JSON.stringify(mergedConfig, null, 2),
+        'utf-8'
+      )
+      
+      console.log('[ConfigManager] 成功同步配置到 Cursor')
+      
+      return {
+        success: true,
+        message: `已同步 ${this.servers.size} 个 MCP Server 配置到 Cursor`
+      }
+    } catch (error: any) {
+      console.error('[ConfigManager] 同步到 Cursor 失败:', error)
+      return {
+        success: false,
+        message: `同步失败: ${error.message}`
+      }
+    }
+  }
+
+  /**
    * 生成唯一 ID
    */
   private generateId(): string {

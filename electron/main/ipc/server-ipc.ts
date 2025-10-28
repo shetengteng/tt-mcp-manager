@@ -125,7 +125,7 @@ export function setupServerIpc(): void {
   ipcMain.handle('server:getStatus', async (_, serverId: string) => {
     try {
       const status = processManager.getServerStatus(serverId)
-      console.log(`[IPC] 获取状态 [${serverId}]:`, status)
+      // 不输出常规状态查询日志，避免日志污染（每5秒会轮询一次）
       return status
     } catch (error: any) {
       console.error(`获取服务器状态失败 [${serverId}]:`, error)

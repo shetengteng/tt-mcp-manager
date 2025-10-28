@@ -60,7 +60,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     exportSingle: (serverId: string) => ipcRenderer.invoke('config:exportSingle', serverId),
     export: () => ipcRenderer.invoke('config:export'),
     exportToFile: (filePath: string) => ipcRenderer.invoke('config:exportToFile', filePath),
-    import: (filePath: string) => ipcRenderer.invoke('config:import', filePath)
+    import: (filePath: string) => ipcRenderer.invoke('config:import', filePath),
+    syncSingleToCursor: (serverId: string) => ipcRenderer.invoke('config:syncSingleToCursor', serverId),
+    syncToCursor: () => ipcRenderer.invoke('config:syncToCursor')
   },
 
   // 应用设置

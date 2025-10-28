@@ -83,6 +83,34 @@ export function setupConfigIpc(): void {
     }
   })
 
+  // 同步单个服务器配置到 Cursor
+  ipcMain.handle('config:syncSingleToCursor', async (_, serverId: string) => {
+    try {
+      const result = await configManager.syncSingleToCursor(serverId)
+      return result
+    } catch (error: any) {
+      console.error('同步单个服务器到 Cursor 失败:', error)
+      return {
+        success: false,
+        message: `同步失败: ${error.message}`
+      }
+    }
+  })
+
+  // 同步配置到 Cursor
+  ipcMain.handle('config:syncToCursor', async () => {
+    try {
+      const result = await configManager.syncToCursor()
+      return result
+    } catch (error: any) {
+      console.error('同步到 Cursor 失败:', error)
+      return {
+        success: false,
+        message: `同步失败: ${error.message}`
+      }
+    }
+  })
+
   console.log('✓ 配置 IPC 处理器设置完成')
 }
 

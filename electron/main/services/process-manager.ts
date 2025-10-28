@@ -221,24 +221,22 @@ export class ProcessManager extends EventEmitter {
     // 首先检查是否有错误状态
     const errorState = this.errorStates.get(serverId)
     if (errorState) {
-      console.log(`[ProcessManager] 服务器 ${serverId} 处于错误状态`)
+      // 只在状态变化时输出日志，避免重复
       return { status: 'error' }
     }
 
     const mcpProcess = this.processes.get(serverId)
     if (!mcpProcess) {
-      console.log(`[ProcessManager] 服务器 ${serverId} 不存在，返回 stopped`)
+      // 服务器不存在是正常情况（已停止或未启动），不需要每次都输出日志
       return { status: 'stopped' }
     }
 
     const uptime = Date.now() - mcpProcess.startTime.getTime()
-    const result = {
+    return {
       status: mcpProcess.status,
       uptime,
       pid: mcpProcess.pid
     }
-    console.log(`[ProcessManager] 服务器 ${serverId} 状态:`, result)
-    return result
   }
 
   /**

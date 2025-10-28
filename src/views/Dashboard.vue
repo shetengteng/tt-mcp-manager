@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useServerStore } from '@/stores/servers'
 import { useLogStore } from '@/stores/logs'
 import { useToast } from '@/components/ui/toast/use-toast'
-import { ShoppingBag, Play, Pause, Plus, Trash2, Download, FileText, TestTube2 } from 'lucide-vue-next'
+import { ShoppingBag, Play, Pause, Plus, Trash2, Download, FileText, TestTube2, RefreshCcw } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -61,22 +61,29 @@ const errorServers = computed(() => {
   })
 })
 
+// 定时器变量
+let refreshInterval: ReturnType<typeof setInterval> | null = null
+
 // 加载数据
 onMounted(async () => {
   await serverStore.loadServers()
   logStore.subscribeToLogs()
   
   // 定时刷新状态（每5秒）
-  const refreshInterval = setInterval(async () => {
+  refreshInterval = setInterval(async () => {
     if (!serverStore.loading) {
       await serverStore.refreshStatuses()
     }
   }, 5000)
-  
-  // 清理定时器
-  onUnmounted(() => {
+})
+
+// 清理定时器（必须在 setup 顶层同步调用）
+onUnmounted(() => {
+  if (refreshInterval) {
     clearInterval(refreshInterval)
-  })
+    refreshInterval = null
+  }
+  logStore.unsubscribeFromLogs()
 })
 
 // 打开删除确认对话框
@@ -313,18 +320,107 @@ async function exportSingleServer(serverId: string, serverName: string) {
   }
 }
 
+// 同步单个服务器到 Cursor
+async function syncSingleToCursor(serverId: string, serverName: string) {
+  try {
+    const result = await window.electronAPI.config.syncSingleToCursor(serverId)
+    
+    if (result.success) {
+      toast({
+        title: '🎉 同步成功',
+        description: `${serverName} 已同步到 Cursor`,
+        duration: 3000,
+      })
+      toast({
+        title: '💡 提示',
+        description: '请重启 Cursor 以加载新配置',
+        duration: 5000,
+      })
+    } else {
+      toast({
+        title: '❌ 同步失败',
+        description: result.message,
+        variant: 'destructive',
+      })
+    }
+  } catch (error: any) {
+    toast({
+      title: '同步失败',
+      description: error.message || `同步 ${serverName} 到 Cursor 时发生错误`,
+      variant: 'destructive',
+    })
+  }
+}
+
+// 同步配置到 Cursor
+async function syncToCursor() {
+  try {
+    const result = await window.electronAPI.config.syncToCursor()
+    
+    if (result.success) {
+      toast({
+        title: '🎉 同步成功',
+        description: result.message,
+        duration: 5000,
+      })
+      toast({
+        title: '💡 提示',
+        description: '请重启 Cursor 以加载新配置',
+        duration: 5000,
+      })
+    } else {
+      toast({
+        title: '❌ 同步失败',
+        description: result.message,
+        variant: 'destructive',
+      })
+    }
+  } catch (error: any) {
+    toast({
+      title: '同步失败',
+      description: error.message || '同步配置到 Cursor 时发生错误',
+      variant: 'destructive',
+    })
+  }
+}
+
 // 测试服务器功能
 async function testServer(serverId: string, serverName: string) {
+  // 清理之前的结果
+  testingServer.value = null
+  testingServerName.value = ''
+  testResult.value = null
+  isTesting.value = false
+  showTestDialog.value = false
+  
+  // 等待 UI 更新
+  await new Promise(resolve => setTimeout(resolve, 50))
+  
+  // 设置新的测试状态
   testingServer.value = serverId
   testingServerName.value = serverName
-  testResult.value = null
   isTesting.value = true
   showTestDialog.value = true
 
   try {
     console.log('🧪 开始测试服务器:', serverId, serverName)
+    
+    // 同时启动测试和最小显示时间计时器
+    const startTime = Date.now()
+    const minDisplayTime = 800 // 最小显示 800ms，确保用户能看到 loading
+    
     const result = await window.electronAPI.server.test(serverId)
     console.log('🧪 测试结果:', result)
+    
+    // 计算已经过去的时间
+    const elapsedTime = Date.now() - startTime
+    const remainingTime = Math.max(0, minDisplayTime - elapsedTime)
+    
+    // 如果测试太快完成，等待剩余时间
+    if (remainingTime > 0) {
+      await new Promise(resolve => setTimeout(resolve, remainingTime))
+    }
+    
     testResult.value = result
 
     if (result.success) {
@@ -405,7 +501,7 @@ async function testServer(serverId: string, serverName: string) {
         <CardTitle>快速操作</CardTitle>
         <CardDescription>快速开始使用 MCP Manager</CardDescription>
       </CardHeader>
-      <CardContent class="flex gap-4">
+      <CardContent class="flex gap-4 flex-wrap">
         <Button @click="router.push('/templates')">
           <Plus class="h-4 w-4 mr-2" />
           从模板创建
@@ -414,9 +510,18 @@ async function testServer(serverId: string, serverName: string) {
           <ShoppingBag class="h-4 w-4 mr-2" />
           浏览市场
         </Button>
+        <Button 
+          variant="default" 
+          @click="syncToCursor" 
+          :disabled="serverStore.servers.length === 0"
+          class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+        >
+          <Download class="h-4 w-4 mr-2" />
+          同步到 Cursor
+        </Button>
         <Button variant="outline" @click="exportCursorConfig" :disabled="serverStore.servers.length === 0">
           <Download class="h-4 w-4 mr-2" />
-          导出 Cursor 配置
+          导出配置
         </Button>
       </CardContent>
     </Card>
@@ -451,94 +556,113 @@ async function testServer(serverId: string, serverName: string) {
             @click="serverStore.selectServer(server.id)"
           >
             <CardContent class="p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <!-- 运行状态指示器 -->
-                    <div 
-                      class="w-2 h-2 rounded-full"
-                      :class="getStatusColor(server.id)"
-                      :title="getServerStatusText(server.id)"
-                    ></div>
-                    <h4 class="font-medium">{{ server.name }}</h4>
-                    <Badge>{{ server.type }}</Badge>
-                    <Badge 
-                      v-if="isServerRunning(server.id)" 
-                      variant="default" 
-                      class="text-xs"
-                    >
-                      运行中
-                    </Badge>
-                    <Badge 
-                      v-else-if="isServerError(server.id)" 
-                      variant="destructive" 
-                      class="text-xs"
-                    >
-                      错误
-                    </Badge>
+              <div class="space-y-3">
+                <!-- 第一行：服务器信息 -->
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <!-- 运行状态指示器 -->
+                      <div 
+                        class="w-2 h-2 rounded-full shrink-0"
+                        :class="getStatusColor(server.id)"
+                        :title="getServerStatusText(server.id)"
+                      ></div>
+                      <h4 class="font-medium">{{ server.name }}</h4>
+                      <Badge class="shrink-0">{{ server.type }}</Badge>
+                      <Badge 
+                        v-if="isServerRunning(server.id)" 
+                        variant="default" 
+                        class="text-xs shrink-0"
+                      >
+                        运行中
+                      </Badge>
+                      <Badge 
+                        v-else-if="isServerError(server.id)" 
+                        variant="destructive" 
+                        class="text-xs shrink-0"
+                      >
+                        错误
+                      </Badge>
+                    </div>
+                    <p class="text-sm text-muted-foreground truncate">{{ server.command }}</p>
                   </div>
-                  <p class="text-sm text-muted-foreground">{{ server.command }}</p>
                 </div>
-                <div class="flex gap-2">
-                  <!-- 如果是错误状态，显示错误提示 -->
-                  <div v-if="isServerError(server.id)" class="flex items-center gap-2 mr-2">
-                    <span class="text-xs text-destructive">启动失败</span>
+
+                <!-- 第二行：错误提示 + 操作按钮 -->
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <!-- 错误提示 -->
+                  <div v-if="isServerError(server.id)" class="flex items-center gap-2">
+                    <span class="text-xs text-destructive whitespace-nowrap">启动失败</span>
                   </div>
+                  <div v-else class="flex-1"></div>
                   
-                  <Button
-                    size="sm"
-                    variant="default"
-                    :disabled="isServerRunning(server.id) || isServerOperating(server.id)"
-                    @click.stop="handleStartServer(server.id, server.name)"
-                  >
-                    <Play class="h-4 w-4 mr-1" />
-                    {{ isServerOperating(server.id) ? '操作中...' : '启动' }}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    :disabled="!isServerRunning(server.id) || isServerOperating(server.id)"
-                    @click.stop="handleStopServer(server.id, server.name)"
-                  >
-                    <Pause class="h-4 w-4 mr-1" />
-                    {{ isServerOperating(server.id) ? '操作中...' : '停止' }}
-                  </Button>
-                  <Button
-                    size="sm"
-                    :variant="isServerError(server.id) ? 'destructive' : 'outline'"
-                    :disabled="isServerOperating(server.id)"
-                    @click.stop="viewServerLogs(server.id, server.name)"
-                    :title="isServerError(server.id) ? '查看错误日志' : '查看日志'"
-                  >
-                    <FileText class="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    :disabled="!isServerRunning(server.id) || isServerOperating(server.id)"
-                    @click.stop="testServer(server.id, server.name)"
-                    title="测试功能"
-                  >
-                    <TestTube2 class="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    :disabled="isServerOperating(server.id)"
-                    @click.stop="exportSingleServer(server.id, server.name)"
-                    title="导出配置"
-                  >
-                    <Download class="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    :disabled="isServerOperating(server.id)"
-                    @click.stop="openDeleteDialog(server.id, server.name)"
-                    title="删除"
-                  >
-                    <Trash2 class="h-4 w-4" />
-                  </Button>
+                  <!-- 按钮组 -->
+                  <div class="flex gap-2 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      :disabled="isServerRunning(server.id) || isServerOperating(server.id)"
+                      @click.stop="handleStartServer(server.id, server.name)"
+                      title="启动服务器"
+                    >
+                      <Play class="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      :disabled="!isServerRunning(server.id) || isServerOperating(server.id)"
+                      @click.stop="handleStopServer(server.id, server.name)"
+                      title="停止服务器"
+                    >
+                      <Pause class="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      :variant="isServerError(server.id) ? 'destructive' : 'outline'"
+                      :disabled="isServerOperating(server.id)"
+                      @click.stop="viewServerLogs(server.id, server.name)"
+                      :title="isServerError(server.id) ? '查看错误日志' : '查看日志'"
+                    >
+                      <FileText class="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      :disabled="!isServerRunning(server.id) || isServerOperating(server.id)"
+                      @click.stop="testServer(server.id, server.name)"
+                      title="测试功能"
+                    >
+                      <TestTube2 class="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      :disabled="isServerOperating(server.id)"
+                      @click.stop="exportSingleServer(server.id, server.name)"
+                      title="导出配置"
+                    >
+                      <Download class="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      :disabled="isServerOperating(server.id)"
+                      @click.stop="syncSingleToCursor(server.id, server.name)"
+                      title="同步到 Cursor"
+                      class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <RefreshCcw class="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      :disabled="isServerOperating(server.id)"
+                      @click.stop="openDeleteDialog(server.id, server.name)"
+                      title="删除"
+                    >
+                      <Trash2 class="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -686,17 +810,23 @@ async function testServer(serverId: string, serverName: string) {
           </DialogDescription>
         </DialogHeader>
 
-        <div class="space-y-4">
+        <div class="space-y-4 min-h-[300px] flex flex-col">
           <!-- 测试中 -->
-          <div v-if="isTesting" class="flex items-center justify-center py-8">
-            <div class="flex flex-col items-center gap-3">
-              <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-              <p class="text-sm text-muted-foreground">正在测试服务器...</p>
+          <div v-if="isTesting" class="flex-1 flex items-center justify-center">
+            <div class="flex flex-col items-center gap-4">
+              <div class="relative">
+                <div class="animate-spin rounded-full h-16 w-16 border-4 border-primary/20"></div>
+                <div class="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent absolute top-0 left-0"></div>
+              </div>
+              <div class="text-center space-y-2">
+                <p class="text-base font-medium">正在测试服务器...</p>
+                <p class="text-xs text-muted-foreground">发送测试请求并等待响应</p>
+              </div>
             </div>
           </div>
 
           <!-- 测试结果 -->
-          <div v-else-if="testResult" class="space-y-4">
+          <div v-else-if="testResult" class="space-y-4 flex-1">
             <!-- 成功 -->
             <div v-if="testResult.success" class="space-y-4">
               <div class="flex items-center gap-2 text-green-600 dark:text-green-400">
@@ -806,7 +936,10 @@ async function testServer(serverId: string, serverName: string) {
           <Button 
             v-if="testResult && !testResult.success"
             variant="default"
-            @click="viewServerLogs(testingServer!, testingServerName)"
+            @click="() => {
+              showTestDialog = false
+              setTimeout(() => viewServerLogs(testingServer!, testingServerName), 100)
+            }"
           >
             <FileText class="h-4 w-4 mr-2" />
             查看日志
