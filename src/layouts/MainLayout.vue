@@ -216,8 +216,8 @@ const handlePanelResize = (sizes: number[]) => {
                       size="icon"
                       @click="toggleCollapse"
                     >
-                      <ChevronRight v-if="isCollapsed" class="h-4 w-4" />
-                      <ChevronLeft v-else class="h-4 w-4" />
+                      <PanelLeftOpen v-if="isCollapsed" class="h-4 w-4" />
+                      <PanelLeftClose v-else class="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>

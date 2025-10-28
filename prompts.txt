@@ -1,1 +1,15 @@
-右侧头部的 收起 的图标不好看，有其他的吗
+✅ 更换收起图标！
+
+更新内容：
+- ❌ ChevronLeft/ChevronRight（箭头）
+- ✅ PanelLeftClose/PanelLeftOpen（面板图标）
+
+新图标更直观，表示左侧面板的开关状态！
+
+💡 其他可选图标：
+- Menu/X - 汉堡菜单
+- ChevronsLeft/ChevronsRight - 双箭头
+- SidebarOpen/SidebarClose - 侧边栏图标
+- MenuSquare - 方形菜单
+
+如果不满意可以再换其他图标！
