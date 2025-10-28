@@ -103,6 +103,7 @@ async function confirmDelete() {
     toast({
       title: '删除成功',
       description: `已成功删除服务器: ${serverToDeleteName.value}`,
+      duration: 2000,
     })
     serverToDelete.value = null
     serverToDeleteName.value = ''
@@ -111,6 +112,7 @@ async function confirmDelete() {
       title: '删除失败',
       description: error.message || '删除服务器时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -143,6 +145,7 @@ async function handleStartServer(serverId: string, serverName: string) {
     toast({
       title: '启动成功',
       description: `${serverName} 已成功启动`,
+      duration: 2000,
     })
   } catch (error: any) {
     console.error('启动操作失败:', error)
@@ -150,6 +153,7 @@ async function handleStartServer(serverId: string, serverName: string) {
       title: '启动失败',
       description: error.message || '启动服务器时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   } finally {
     operatingServers.value.delete(serverId)
@@ -176,6 +180,7 @@ async function handleStopServer(serverId: string, serverName: string) {
     toast({
       title: '已停止',
       description: `${serverName} 已停止运行`,
+      duration: 2000,
     })
   } catch (error: any) {
     console.error('停止操作失败:', error)
@@ -183,6 +188,7 @@ async function handleStopServer(serverId: string, serverName: string) {
       title: '停止失败',
       description: error.message || '停止服务器时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   } finally {
     operatingServers.value.delete(serverId)
@@ -247,6 +253,7 @@ async function viewServerLogs(serverId: string, serverName: string) {
       title: '加载日志失败',
       description: error.message || '无法加载服务器日志',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -279,6 +286,7 @@ async function exportCursorConfig() {
       title: '导出失败',
       description: error.message || '导出配置时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -290,6 +298,7 @@ async function copyConfig() {
     toast({
       title: '已复制',
       description: '配置已复制到剪贴板',
+      duration: 2000,
     })
     showExportDialog.value = false
   } catch (error: any) {
@@ -297,6 +306,7 @@ async function copyConfig() {
       title: '复制失败',
       description: error.message || '复制到剪贴板时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -316,6 +326,7 @@ async function exportSingleServer(serverId: string, serverName: string) {
       title: '导出失败',
       description: error.message || `导出 ${serverName} 配置时发生错误`,
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -328,19 +339,15 @@ async function syncSingleToCursor(serverId: string, serverName: string) {
     if (result.success) {
       toast({
         title: '🎉 同步成功',
-        description: `${serverName} 已同步到 Cursor`,
+        description: `${serverName} 已同步到 Cursor，请重启 Cursor 以加载新配置`,
         duration: 3000,
-      })
-      toast({
-        title: '💡 提示',
-        description: '请重启 Cursor 以加载新配置',
-        duration: 5000,
       })
     } else {
       toast({
         title: '❌ 同步失败',
         description: result.message,
         variant: 'destructive',
+        duration: 3000,
       })
     }
   } catch (error: any) {
@@ -348,6 +355,7 @@ async function syncSingleToCursor(serverId: string, serverName: string) {
       title: '同步失败',
       description: error.message || `同步 ${serverName} 到 Cursor 时发生错误`,
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -360,19 +368,15 @@ async function syncToCursor() {
     if (result.success) {
       toast({
         title: '🎉 同步成功',
-        description: result.message,
-        duration: 5000,
-      })
-      toast({
-        title: '💡 提示',
-        description: '请重启 Cursor 以加载新配置',
-        duration: 5000,
+        description: `${result.message}，请重启 Cursor 以加载新配置`,
+        duration: 3000,
       })
     } else {
       toast({
         title: '❌ 同步失败',
         description: result.message,
         variant: 'destructive',
+        duration: 3000,
       })
     }
   } catch (error: any) {
@@ -380,6 +384,7 @@ async function syncToCursor() {
       title: '同步失败',
       description: error.message || '同步配置到 Cursor 时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -427,12 +432,14 @@ async function testServer(serverId: string, serverName: string) {
       toast({
         title: '✅ 测试成功',
         description: `${serverName} 正常响应`,
+        duration: 2000,
       })
     } else {
       toast({
         title: '❌ 测试失败',
         description: result.error || '服务器未响应',
         variant: 'destructive',
+        duration: 3000,
       })
     }
   } catch (error: any) {
@@ -445,6 +452,7 @@ async function testServer(serverId: string, serverName: string) {
       title: '测试失败',
       description: error.message || '测试服务器时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   } finally {
     isTesting.value = false
@@ -605,7 +613,8 @@ async function testServer(serverId: string, serverName: string) {
                       @click.stop="handleStartServer(server.id, server.name)"
                       title="启动服务器"
                     >
-                      <Play class="h-4 w-4" />
+                      <Play class="h-4 w-4 mr-1" />
+                      启动
                     </Button>
                     <Button
                       size="sm"
@@ -614,7 +623,8 @@ async function testServer(serverId: string, serverName: string) {
                       @click.stop="handleStopServer(server.id, server.name)"
                       title="停止服务器"
                     >
-                      <Pause class="h-4 w-4" />
+                      <Pause class="h-4 w-4 mr-1" />
+                      停止
                     </Button>
                     <Button
                       size="sm"
@@ -623,7 +633,8 @@ async function testServer(serverId: string, serverName: string) {
                       @click.stop="viewServerLogs(server.id, server.name)"
                       :title="isServerError(server.id) ? '查看错误日志' : '查看日志'"
                     >
-                      <FileText class="h-4 w-4" />
+                      <FileText class="h-4 w-4 mr-1" />
+                      日志
                     </Button>
                     <Button
                       size="sm"
@@ -632,7 +643,8 @@ async function testServer(serverId: string, serverName: string) {
                       @click.stop="testServer(server.id, server.name)"
                       title="测试功能"
                     >
-                      <TestTube2 class="h-4 w-4" />
+                      <TestTube2 class="h-4 w-4 mr-1" />
+                      测试
                     </Button>
                     <Button
                       size="sm"
@@ -641,7 +653,8 @@ async function testServer(serverId: string, serverName: string) {
                       @click.stop="exportSingleServer(server.id, server.name)"
                       title="导出配置"
                     >
-                      <Download class="h-4 w-4" />
+                      <Download class="h-4 w-4 mr-1" />
+                      导出
                     </Button>
                     <Button
                       size="sm"
@@ -651,7 +664,8 @@ async function testServer(serverId: string, serverName: string) {
                       title="同步到 Cursor"
                       class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                     >
-                      <RefreshCcw class="h-4 w-4" />
+                      <RefreshCcw class="h-4 w-4 mr-1" />
+                      同步到Cursor
                     </Button>
                     <Button
                       size="sm"
@@ -660,7 +674,8 @@ async function testServer(serverId: string, serverName: string) {
                       @click.stop="openDeleteDialog(server.id, server.name)"
                       title="删除"
                     >
-                      <Trash2 class="h-4 w-4" />
+                      <Trash2 class="h-4 w-4 mr-1" />
+                      删除
                     </Button>
                   </div>
                 </div>

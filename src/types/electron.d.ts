@@ -46,6 +46,7 @@ export interface MarketItem {
   displayName: string
   fullName?: string
   description: string
+  descriptionZh?: string // 中文描述
   stars: number
   forks?: number
   language: string

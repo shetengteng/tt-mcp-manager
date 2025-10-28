@@ -23,12 +23,14 @@ async function handleSaveSettings() {
     toast({
       title: '保存成功',
       description: '设置已成功保存',
+      duration: 2000,
     })
   } catch (error: any) {
     toast({
       title: '保存失败',
       description: error.message || '保存设置时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }
@@ -41,6 +43,7 @@ async function handleSelectFolder() {
       toast({
         title: '文件夹已选择',
         description: result.path,
+        duration: 2000,
       })
     }
   } catch (error: any) {
@@ -48,6 +51,7 @@ async function handleSelectFolder() {
       title: '选择失败',
       description: error.message || '选择文件夹时发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   }
 }

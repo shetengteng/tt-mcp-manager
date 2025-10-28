@@ -111,12 +111,14 @@ async function handleInstall() {
     toast({
       title: '安装成功',
       description: `${currentItem.value.displayName} 已成功安装并添加到服务器列表`,
+      duration: 3000,
     })
   } catch (error: any) {
     toast({
       title: '安装失败',
       description: error.message || '安装过程中发生错误',
       variant: 'destructive',
+      duration: 3000,
     })
   } finally {
     installing.value = false
@@ -241,7 +243,7 @@ function openExternal(url: string) {
               </div>
             </div>
             <CardDescription class="line-clamp-3 text-sm leading-relaxed">
-              {{ item.description }}
+              {{ item.descriptionZh || item.description }}
             </CardDescription>
           </CardHeader>
           
@@ -377,7 +379,7 @@ function openExternal(url: string) {
           <div>
             <h3 class="font-medium mb-2">描述</h3>
             <p class="text-sm text-muted-foreground">
-              {{ currentItem?.description }}
+              {{ currentItem?.descriptionZh || currentItem?.description }}
             </p>
           </div>
 
