@@ -58,7 +58,7 @@ const navigateTo = (path: string) => {
 
 <template>
   <SidebarProvider
-    style="--sidebar-width: 20rem; --sidebar-width-mobile: 20rem"
+    style="--sidebar-width: 13rem; --sidebar-width-mobile: 13rem"
     :default-open="true"
   >
     <!-- 侧边栏 -->
