@@ -1,0 +1,10 @@
+左侧缩小的最小的时候，头部的icon被压缩了，应该只显示 icon，而不显示文字
+
+[plugin:vite:vue] Error parsing JavaScript expression: Unexpected token, expected "," (3:14)
+/Users/TerrellShe/Documents/personal/tt-projects/tt-mcp-manager/src/views/marketplace/index.vue:478:21
+477|            <Button
+478|              @click="
+479|                openInstallDialog(currentItem!)
+   |  ^
+480|                showDetailsDialog = false
+481|              "
