@@ -17,7 +17,6 @@ import {
   SidebarProvider,
   SidebarTrigger
 } from '@/components/ui/sidebar'
-import { Separator } from '@/components/ui/separator'
 
 const router = useRouter()
 const route = useRoute()
@@ -75,7 +74,9 @@ const navigateTo = (path: string) => {
                 >
                   <span class="text-sm font-bold">M</span>
                 </div>
-                <div class="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
+                <div
+                  class="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden"
+                >
                   <span class="font-semibold">MCP Manager</span>
                   <span class="text-xs text-muted-foreground">服务器管理工具</span>
                 </div>
@@ -119,20 +120,20 @@ const navigateTo = (path: string) => {
     </Sidebar>
 
     <!-- 主内容区域 -->
-    <SidebarInset>
+    <SidebarInset class="flex h-screen flex-col">
       <!-- 顶部导航栏 -->
-      <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6">
+      <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6 border-b">
         <div class="flex flex-1 items-center justify-between">
           <div class="flex items-center gap-2">
             <SidebarTrigger class="border-none" />
             <h1 class="text-lg font-semibold">
-              {{ menuItems.find((item) => item.path === route.path)?.title || 'MCP Manager' }}
+              {{ menuItems.find(item => item.path === route.path)?.title || 'MCP Manager' }}
             </h1>
           </div>
         </div>
       </header>
 
-      <!-- 页面内容 -->
+      <!-- 页面内容 - 添加滚动容器 -->
       <main class="flex-1 overflow-y-auto p-6">
         <router-view />
       </main>

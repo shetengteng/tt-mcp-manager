@@ -51,13 +51,18 @@ function isServerOperating(serverId: string) {
 function getServerStatusText(serverId: string) {
   const status = getServerStatus(serverId)
   if (!status) return '未知'
-  
+
   switch (status.status) {
-    case 'running': return '运行中'
-    case 'stopped': return '已停止'
-    case 'error': return '错误'
-    case 'restarting': return '重启中'
-    default: return status.status
+    case 'running':
+      return '运行中'
+    case 'stopped':
+      return '已停止'
+    case 'error':
+      return '错误'
+    case 'restarting':
+      return '重启中'
+    default:
+      return status.status
   }
 }
 
@@ -65,12 +70,16 @@ function getServerStatusText(serverId: string) {
 function getStatusColor(serverId: string) {
   const status = getServerStatus(serverId)
   if (!status) return 'bg-gray-300'
-  
+
   switch (status.status) {
-    case 'running': return 'bg-green-500 animate-pulse'
-    case 'error': return 'bg-red-500 animate-pulse'
-    case 'restarting': return 'bg-yellow-500 animate-pulse'
-    default: return 'bg-gray-300'
+    case 'running':
+      return 'bg-green-500 animate-pulse'
+    case 'error':
+      return 'bg-red-500 animate-pulse'
+    case 'restarting':
+      return 'bg-yellow-500 animate-pulse'
+    default:
+      return 'bg-gray-300'
   }
 }
 
@@ -80,19 +89,19 @@ async function handleStartServer(serverId: string, serverName: string) {
     console.log('服务器操作中，跳过:', serverId)
     return
   }
-  
+
   operatingServers.value.add(serverId)
   try {
     console.log('开始启动操作:', serverId)
     await new Promise(resolve => setTimeout(resolve, 200))
-    
+
     await serverStore.startServer(serverId)
     console.log('启动操作完成:', serverId)
-    
+
     toast({
       title: '启动成功',
       description: `${serverName} 已成功启动`,
-      duration: 2000,
+      duration: 2000
     })
   } catch (error: any) {
     console.error('启动操作失败:', error)
@@ -100,7 +109,7 @@ async function handleStartServer(serverId: string, serverName: string) {
       title: '启动失败',
       description: error.message || '启动服务器时发生错误',
       variant: 'destructive',
-      duration: 3000,
+      duration: 3000
     })
   } finally {
     operatingServers.value.delete(serverId)
@@ -113,19 +122,19 @@ async function handleStopServer(serverId: string, serverName: string) {
     console.log('服务器操作中，跳过:', serverId)
     return
   }
-  
+
   operatingServers.value.add(serverId)
   try {
     console.log('开始停止操作:', serverId)
     await serverStore.stopServer(serverId)
     console.log('停止操作完成:', serverId)
-    
+
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     toast({
       title: '已停止',
       description: `${serverName} 已停止运行`,
-      duration: 2000,
+      duration: 2000
     })
   } catch (error: any) {
     console.error('停止操作失败:', error)
@@ -133,7 +142,7 @@ async function handleStopServer(serverId: string, serverName: string) {
       title: '停止失败',
       description: error.message || '停止服务器时发生错误',
       variant: 'destructive',
-      duration: 3000,
+      duration: 3000
     })
   } finally {
     operatingServers.value.delete(serverId)
@@ -151,7 +160,7 @@ async function handleExportServer(serverId: string, serverName: string) {
       title: '导出失败',
       description: error.message || `导出 ${serverName} 配置时发生错误`,
       variant: 'destructive',
-      duration: 3000,
+      duration: 3000
     })
   }
 }
@@ -160,19 +169,19 @@ async function handleExportServer(serverId: string, serverName: string) {
 async function handleSyncServer(serverId: string, serverName: string) {
   try {
     const result = await window.electronAPI.config.syncSingleToCursor(serverId)
-    
+
     if (result.success) {
       toast({
         title: '🎉 同步成功',
         description: `${serverName} 已同步到 Cursor，请重启 Cursor 以加载新配置`,
-        duration: 3000,
+        duration: 3000
       })
     } else {
       toast({
         title: '❌ 同步失败',
         description: result.message,
         variant: 'destructive',
-        duration: 3000,
+        duration: 3000
       })
     }
   } catch (error: any) {
@@ -180,7 +189,7 @@ async function handleSyncServer(serverId: string, serverName: string) {
       title: '同步失败',
       description: error.message || `同步 ${serverName} 到 Cursor 时发生错误`,
       variant: 'destructive',
-      duration: 3000,
+      duration: 3000
     })
   }
 }
@@ -189,22 +198,13 @@ async function handleSyncServer(serverId: string, serverName: string) {
 <template>
   <Card>
     <CardHeader>
-      <CardTitle>
-        服务器列表
-      </CardTitle>
-      <CardDescription>
-        管理您的 MCP 服务器
-      </CardDescription>
+      <CardTitle> 服务器列表 </CardTitle>
+      <CardDescription> 管理您的 MCP 服务器 </CardDescription>
     </CardHeader>
     <CardContent>
       <!-- 加载中 -->
-      <div
-        v-if="serverStore.loading"
-        class="text-center py-8"
-      >
-        <div class="text-muted-foreground">
-          加载中...
-        </div>
+      <div v-if="serverStore.loading" class="text-center py-8">
+        <div class="text-muted-foreground">加载中...</div>
       </div>
 
       <!-- 空状态 -->
@@ -212,20 +212,15 @@ async function handleSyncServer(serverId: string, serverName: string) {
         v-else-if="serverStore.servers.length === 0"
         class="flex flex-col items-center justify-center py-12"
       >
-        <p class="text-muted-foreground mb-4">
-          还没有配置任何服务器
-        </p>
+        <p class="text-muted-foreground mb-4">还没有配置任何服务器</p>
         <Button @click="router.push('/templates')">
           <Plus class="h-4 w-4 mr-2" />
           创建第一个服务器
         </Button>
       </div>
 
-      <!-- 服务器列表 -->
-      <div
-        v-else
-        class="space-y-3"
-      >
+      <!-- 服务器列表 - 添加最大高度和滚动 -->
+      <div v-else class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
         <TooltipProvider :delay-duration="200">
           <ServerCard
             v-for="server in serverStore.servers"

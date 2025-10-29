@@ -143,6 +143,12 @@ async function handleInstall() {
 function openExternal(url: string) {
   window.open(url, '_blank')
 }
+
+// 打开安装对话框并关闭详情对话框
+function handleInstallFromDetails(item: MarketItem) {
+  openInstallDialog(item)
+  showDetailsDialog.value = false
+}
 </script>
 
 <template>
@@ -474,7 +480,7 @@ function openExternal(url: string) {
 
         <DialogFooter>
           <Button variant="outline" @click="showDetailsDialog = false"> 关闭 </Button>
-          <Button @click="openInstallDialog(currentItem!); showDetailsDialog = false">
+          <Button @click="handleInstallFromDetails(currentItem!)">
             <Download class="h-4 w-4 mr-2" />
             安装
           </Button>
