@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { marketplaceService, configManager } from '../services'
+import { marketplaceService, configManager, registrySync } from '../services'
 import type { SearchOptions, MarketItem } from '../types'
 import { promisify } from 'util'
 
@@ -9,13 +9,57 @@ const execAsync = promisify(require('child_process').exec)
  * 设置市场相关的 IPC 处理器
  */
 export function setupMarketplaceIpc(): void {
-  // 搜索 MCP Servers
+  // 搜索 MCP Servers（从 SQLite 读取）
   ipcMain.handle('marketplace:search', async (_, options: SearchOptions) => {
     try {
-      return await marketplaceService.searchServers(options)
+      const servers = registrySync.searchServers(options.query || '', options.category)
+
+      return {
+        items: servers,
+        total: servers.length,
+        page: 1,
+        pageSize: servers.length
+      }
     } catch (error: any) {
       console.error('搜索市场失败:', error)
-      throw error
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 0
+      }
+    }
+  })
+
+  // 手动触发同步
+  ipcMain.handle('marketplace:sync', async () => {
+    try {
+      const result = await registrySync.syncFromRegistry()
+      return result
+    } catch (error: any) {
+      console.error('同步市场数据失败:', error)
+      return {
+        success: false,
+        count: 0,
+        error: error.message
+      }
+    }
+  })
+
+  // 获取同步状态
+  ipcMain.handle('marketplace:sync-status', async () => {
+    try {
+      const status = registrySync.getSyncStatus()
+      return {
+        success: true,
+        data: status
+      }
+    } catch (error: any) {
+      console.error('获取同步状态失败:', error)
+      return {
+        success: false,
+        error: error.message
+      }
     }
   })
 
@@ -45,11 +89,13 @@ export function setupMarketplaceIpc(): void {
       console.log(`安装服务器: ${item.name} (${item.installType})`)
 
       // 确保 installType 存在，如果不存在则根据 installCommand 推断
-      const installType = item.installType || (
-        item.npmPackage || item.installCommand?.includes('npx') ? 'npm' :
-        item.pythonPackage || item.installCommand?.includes('pip') ? 'python' :
-        'git'
-      )
+      const installType =
+        item.installType ||
+        (item.npmPackage || item.installCommand?.includes('npx')
+          ? 'npm'
+          : item.pythonPackage || item.installCommand?.includes('pip')
+            ? 'python'
+            : 'git')
 
       // 确保工作目录存在
       if (userConfig.workingDirectory) {
@@ -160,4 +206,3 @@ function getArgs(item: MarketItem, userConfig: any): string[] {
 function generateId(): string {
   return `server-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
-

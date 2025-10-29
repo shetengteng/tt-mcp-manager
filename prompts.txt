@@ -1,1 +1,11 @@
-检查一下不用的变量
+加载 MCP Servers 数据失败: TypeError: Cannot read properties of undefined (reading 'length')
+    at MarketplaceService.loadMCPServersData (/Users/TerrellShe/Documents/personal/tt-projects/tt-mcp-manager/dist-electron/main/index.js:948:54)
+Deprecation [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+搜索市场失败: Error: 数据库未初始化，请先调用 init()
+    at DatabaseService.getDatabase (/Users/TerrellShe/Documents/personal/tt-projects/tt-mcp-manager/dist-electron/main/index.js:1449:13)
+    at RegistrySyncService.searchServers (/Users/TerrellShe/Documents/personal/tt-projects/tt-mcp-manager/dist-electron/main/index.js:1765:25)
+    at /Users/TerrellShe/Documents/personal/tt-projects/tt-mcp-manager/dist-electron/main/index.js:2047:36
+    at WebContents.<anonymous> (node:electron/js2c/browser_init:2:77979)
+    at WebContents.emit (node:events:517:28)

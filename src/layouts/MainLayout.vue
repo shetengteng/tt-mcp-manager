@@ -99,10 +99,7 @@ const handlePanelResize = (sizes: number[]) => {
         <div class="flex h-full flex-col bg-muted/40 border-r">
           <!-- 侧边栏头部 -->
           <div class="p-4">
-            <div
-              v-if="!isCollapsed"
-              class="flex items-center gap-2"
-            >
+            <div v-if="!isCollapsed" class="flex items-center gap-2">
               <div
                 class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
               >
@@ -113,10 +110,7 @@ const handlePanelResize = (sizes: number[]) => {
                 <span class="text-xs text-muted-foreground">服务器管理工具</span>
               </div>
             </div>
-            <div
-              v-else
-              class="flex justify-center"
-            >
+            <div v-else class="flex justify-center">
               <div
                 class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
               >
@@ -128,10 +122,7 @@ const handlePanelResize = (sizes: number[]) => {
           <!-- 侧边栏内容 -->
           <div class="flex-1 overflow-y-auto p-2">
             <div class="space-y-1">
-              <div
-                v-for="item in menuItems"
-                :key="item.path"
-              >
+              <div v-for="item in menuItems" :key="item.path">
                 <!-- 展开状态 -->
                 <Button
                   v-if="!isCollapsed"
@@ -139,10 +130,7 @@ const handlePanelResize = (sizes: number[]) => {
                   class="w-full justify-start"
                   @click="navigateTo(item.path)"
                 >
-                  <component
-                    :is="item.icon"
-                    class="h-4 w-4 mr-2"
-                  />
+                  <component :is="item.icon" class="h-4 w-4 mr-2" />
                   <span>{{ item.title }}</span>
                 </Button>
 
@@ -155,10 +143,7 @@ const handlePanelResize = (sizes: number[]) => {
                       class="w-full"
                       @click="navigateTo(item.path)"
                     >
-                      <component
-                        :is="item.icon"
-                        class="h-4 w-4"
-                      />
+                      <component :is="item.icon" class="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right">
@@ -171,16 +156,10 @@ const handlePanelResize = (sizes: number[]) => {
 
           <!-- 侧边栏底部 -->
           <div class="p-4">
-            <div
-              v-if="!isCollapsed"
-              class="flex items-center gap-2 text-xs text-muted-foreground"
-            >
+            <div v-if="!isCollapsed" class="flex items-center gap-2 text-xs text-muted-foreground">
               <span>版本 1.0.0</span>
             </div>
-            <div
-              v-else
-              class="flex justify-center"
-            >
+            <div v-else class="flex justify-center">
               <Tooltip>
                 <TooltipTrigger>
                   <span class="text-xs text-muted-foreground">v1</span>
@@ -198,11 +177,7 @@ const handlePanelResize = (sizes: number[]) => {
       <ResizableHandle />
 
       <!-- 右侧主内容区域 -->
-      <ResizablePanel
-        id="content"
-        :default-size="isCollapsed ? 95 : 85"
-        :min-size="50"
-      >
+      <ResizablePanel id="content" :default-size="isCollapsed ? 95 : 85" :min-size="50">
         <div class="flex flex-col h-full">
           <!-- 顶部导航栏 -->
           <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6">
@@ -210,11 +185,7 @@ const handlePanelResize = (sizes: number[]) => {
               <div class="flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger as-child>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      @click="toggleCollapse"
-                    >
+                    <Button variant="ghost" size="icon" @click="toggleCollapse">
                       <PanelLeft class="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>

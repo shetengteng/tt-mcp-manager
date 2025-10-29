@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
-import { initializeServices, processManager } from './services'
+import { initializeServices, cleanupServices, processManager } from './services'
 import { setupIpcHandlers } from './ipc'
 
 // 主窗口实例
@@ -70,7 +70,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', async () => {
   // 停止所有服务器
   await processManager.stopAll()
-  
+
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -80,6 +80,7 @@ app.on('window-all-closed', async () => {
 app.on('before-quit', async () => {
   console.log('应用退出，清理资源...')
   await processManager.stopAll()
+  cleanupServices()
 })
 
 // 处理未捕获的异常
@@ -90,4 +91,3 @@ process.on('uncaughtException', error => {
 process.on('unhandledRejection', reason => {
   console.error('未处理的 Promise 拒绝:', reason)
 })
-
