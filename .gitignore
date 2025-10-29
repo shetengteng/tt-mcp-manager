@@ -39,3 +39,6 @@ coverage
 # Electron
 release
 
+.cursorrules
+userinput.py
+prompts.txt
