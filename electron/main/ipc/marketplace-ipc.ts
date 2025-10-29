@@ -12,7 +12,11 @@ export function setupMarketplaceIpc(): void {
   // 搜索 MCP Servers（从 SQLite 读取）
   ipcMain.handle('marketplace:search', async (_, options: SearchOptions) => {
     try {
-      const servers = registrySync.searchServers(options.query || '', options.category)
+      const servers = registrySync.searchServers(
+        options.query || '',
+        options.category,
+        options.language
+      )
 
       return {
         items: servers,
@@ -110,7 +114,8 @@ export function setupMarketplaceIpc(): void {
         console.log(`使用 npx 运行，无需全局安装: ${item.npmPackage}`)
         console.log(`服务器将在工作目录中运行: ${userConfig.workingDirectory}`)
       } else if (installType === 'python' && item.pythonPackage) {
-        await installPythonPackage(item.pythonPackage)
+        // Python 包也不需要预先安装，将由 Python 运行时处理
+        console.log(`Python 包将按需使用: ${item.pythonPackage}`)
       }
 
       // 创建服务器配置
@@ -186,16 +191,13 @@ function getArgs(item: MarketItem, userConfig: any): string[] {
     args.push('-m', item.pythonPackage)
   }
 
-  // 添加工作目录作为参数（如果有）
-  // 例如 filesystem server 需要路径参数
-  if (userConfig.workingDirectory) {
-    args.push(userConfig.workingDirectory)
-  }
-
   // 添加用户配置的其他参数
   if (userConfig.args && Array.isArray(userConfig.args)) {
     args.push(...userConfig.args)
   }
+
+  // 注意：工作目录不应该作为命令行参数
+  // 而应该通过进程的 cwd (workingDirectory) 设置
 
   return args
 }

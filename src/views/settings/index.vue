@@ -255,9 +255,9 @@ async function handleSelectFolder() {
 
           <div class="space-y-2">
             <Button
-              @click="handleManualSync"
               :disabled="syncing || syncStatus.syncing"
               class="w-full sm:w-auto"
+              @click="handleManualSync"
             >
               <RefreshCw
                 class="h-4 w-4 mr-2"

@@ -47,7 +47,7 @@ export class MarketplaceService {
 
       const content = await fs.readFile(dataPath, 'utf-8')
       this.mcpServersData = JSON.parse(content)
-      
+
       // 自动推断并设置 installType
       if (this.mcpServersData?.servers) {
         this.mcpServersData.servers = this.mcpServersData.servers.map(server => {
@@ -55,7 +55,11 @@ export class MarketplaceService {
             // 根据 npmPackage、pythonPackage 或 installCommand 推断类型
             if (server.npmPackage || server.installCommand?.includes('npx')) {
               server.installType = 'npm'
-            } else if (server.pythonPackage || server.installCommand?.includes('pip') || server.installCommand?.includes('python')) {
+            } else if (
+              server.pythonPackage ||
+              server.installCommand?.includes('pip') ||
+              server.installCommand?.includes('python')
+            ) {
               server.installType = 'python'
             } else {
               server.installType = 'git'
@@ -64,8 +68,9 @@ export class MarketplaceService {
           return server
         })
       }
-      
-      console.log(`已加载 ${this.mcpServersData?.servers.length || 0} 个 MCP Servers`)
+
+      const serverCount = this.mcpServersData?.servers?.length || 0
+      console.log(`已加载 ${serverCount} 个 MCP Servers`)
     } catch (error) {
       console.error('加载 MCP Servers 数据失败:', error)
       // 如果加载失败，使用空数据
@@ -106,26 +111,23 @@ export class MarketplaceService {
     // 搜索查询
     if (options.query) {
       const query = options.query.toLowerCase()
-      filtered = filtered.filter(server => 
-        server.name.toLowerCase().includes(query) ||
-        server.displayName.toLowerCase().includes(query) ||
-        server.description.toLowerCase().includes(query) ||
-        server.topics.some(topic => topic.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        server =>
+          server.name.toLowerCase().includes(query) ||
+          server.displayName.toLowerCase().includes(query) ||
+          server.description.toLowerCase().includes(query) ||
+          server.topics.some(topic => topic.toLowerCase().includes(query))
       )
     }
 
     // 分类筛选
     if (options.category) {
-      filtered = filtered.filter(server => 
-        server.category.includes(options.category)
-      )
+      filtered = filtered.filter(server => server.category.includes(options.category))
     }
 
     // 语言筛选
     if (options.language) {
-      filtered = filtered.filter(server => 
-        server.language === options.language
-      )
+      filtered = filtered.filter(server => server.language === options.language)
     }
 
     // 排序
@@ -226,4 +228,3 @@ ${server.topics.map(t => `\`${t}\``).join(' ')}
     await this.loadMCPServersData()
   }
 }
-

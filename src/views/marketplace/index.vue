@@ -8,7 +8,14 @@ import { Search, Star, Download, ExternalLink, Github, Filter } from 'lucide-vue
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -28,6 +35,7 @@ const settingsStore = useSettingsStore()
 const { toast } = useToast()
 const selectedCategory = ref('')
 const selectedSort = ref('stars')
+const selectedLanguage = ref('')
 
 // 对话框状态
 const showInstallDialog = ref(false)
@@ -64,6 +72,12 @@ function handleSortChange(value: string) {
   handleSearch()
 }
 
+function handleLanguageChange(value: string) {
+  selectedLanguage.value = value
+  marketplaceStore.setLanguage(value)
+  handleSearch()
+}
+
 // 打开安装对话框
 async function openInstallDialog(item: MarketItem) {
   currentItem.value = item
@@ -71,18 +85,18 @@ async function openInstallDialog(item: MarketItem) {
   if (!settingsStore.settings.defaultInstallPath) {
     await settingsStore.loadSettings()
   }
-  
+
   // 使用设置中的默认路径 + 服务器名称
   // 清理服务器名称：去掉特殊字符，去掉开头/结尾/连续的横线
   let serverNameSlug = item.name
     .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '-')  // 替换特殊字符为 -
-    .replace(/^-+|-+$/g, '')       // 去掉开头和结尾的 -
-    .replace(/-+/g, '-')           // 将连续的 - 替换为单个 -
-  
+    .replace(/[^a-z0-9-]/g, '-') // 替换特殊字符为 -
+    .replace(/^-+|-+$/g, '') // 去掉开头和结尾的 -
+    .replace(/-+/g, '-') // 将连续的 - 替换为单个 -
+
   const basePath = settingsStore.settings.defaultInstallPath || '~/mcp-servers'
   const defaultWorkDir = `${basePath}/${serverNameSlug}`
-  
+
   installConfig.value = {
     name: item.displayName,
     workingDirectory: defaultWorkDir,
@@ -101,7 +115,7 @@ async function openDetailsDialog(item: MarketItem) {
 // 执行安装
 async function handleInstall() {
   if (!currentItem.value) return
-  
+
   installing.value = true
   try {
     await marketplaceStore.install(currentItem.value, installConfig.value)
@@ -111,14 +125,14 @@ async function handleInstall() {
     toast({
       title: '安装成功',
       description: `${currentItem.value.displayName} 已成功安装并添加到服务器列表`,
-      duration: 3000,
+      duration: 3000
     })
   } catch (error: any) {
     toast({
       title: '安装失败',
       description: error.message || '安装过程中发生错误',
       variant: 'destructive',
-      duration: 3000,
+      duration: 3000
     })
   } finally {
     installing.value = false
@@ -145,59 +159,55 @@ function openExternal(url: string) {
           <!-- 分类 -->
           <div>
             <Label class="text-sm font-medium mb-3 block">分类</Label>
-            <RadioGroup
-              :model-value="selectedCategory"
-              @update:model-value="handleCategoryChange"
-            >
+            <RadioGroup :model-value="selectedCategory" @update:model-value="handleCategoryChange">
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem
-                  id="cat-all"
-                  value=""
-                />
-                <Label
-                  for="cat-all"
-                  class="font-normal cursor-pointer"
-                >全部</Label>
+                <RadioGroupItem id="cat-all" value="" />
+                <Label for="cat-all" class="font-normal cursor-pointer">全部</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem
-                  id="cat-dev"
-                  value="开发工具"
-                />
-                <Label
-                  for="cat-dev"
-                  class="font-normal cursor-pointer"
-                >开发工具</Label>
+                <RadioGroupItem id="cat-dev" value="开发工具" />
+                <Label for="cat-dev" class="font-normal cursor-pointer">开发工具</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem
-                  id="cat-fs"
-                  value="文件系统"
-                />
-                <Label
-                  for="cat-fs"
-                  class="font-normal cursor-pointer"
-                >文件系统</Label>
+                <RadioGroupItem id="cat-fs" value="文件系统" />
+                <Label for="cat-fs" class="font-normal cursor-pointer">文件系统</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem
-                  id="cat-data"
-                  value="数据平台"
-                />
-                <Label
-                  for="cat-data"
-                  class="font-normal cursor-pointer"
-                >数据平台</Label>
+                <RadioGroupItem id="cat-data" value="数据平台" />
+                <Label for="cat-data" class="font-normal cursor-pointer">数据平台</Label>
               </div>
               <div class="flex items-center space-x-2">
-                <RadioGroupItem
-                  id="cat-web"
-                  value="Web服务"
-                />
-                <Label
-                  for="cat-web"
-                  class="font-normal cursor-pointer"
-                >Web服务</Label>
+                <RadioGroupItem id="cat-web" value="Web服务" />
+                <Label for="cat-web" class="font-normal cursor-pointer">Web服务</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <Separator />
+
+          <!-- 编程语言 -->
+          <div>
+            <Label class="text-sm font-medium mb-3 block">编程语言</Label>
+            <RadioGroup :model-value="selectedLanguage" @update:model-value="handleLanguageChange">
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-all" value="" />
+                <Label for="lang-all" class="font-normal cursor-pointer">全部</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-ts" value="TypeScript" />
+                <Label for="lang-ts" class="font-normal cursor-pointer">TypeScript</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-python" value="Python" />
+                <Label for="lang-python" class="font-normal cursor-pointer">Python</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-go" value="Go" />
+                <Label for="lang-go" class="font-normal cursor-pointer">Go</Label>
+              </div>
+              <div class="flex items-center space-x-2">
+                <RadioGroupItem id="lang-docker" value="Docker" />
+                <Label for="lang-docker" class="font-normal cursor-pointer">Docker</Label>
               </div>
             </RadioGroup>
           </div>
@@ -207,39 +217,18 @@ function openExternal(url: string) {
           <!-- 排序 - 改用 RadioGroup -->
           <div>
             <Label class="text-sm font-medium mb-3 block">排序</Label>
-            <RadioGroup
-              :model-value="selectedSort"
-              @update:model-value="handleSortChange"
-            >
+            <RadioGroup :model-value="selectedSort" @update:model-value="handleSortChange">
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem
-                  id="sort-stars"
-                  value="stars"
-                />
-                <Label
-                  for="sort-stars"
-                  class="font-normal cursor-pointer"
-                >最热门</Label>
+                <RadioGroupItem id="sort-stars" value="stars" />
+                <Label for="sort-stars" class="font-normal cursor-pointer">最热门</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem
-                  id="sort-updated"
-                  value="updated"
-                />
-                <Label
-                  for="sort-updated"
-                  class="font-normal cursor-pointer"
-                >最新更新</Label>
+                <RadioGroupItem id="sort-updated" value="updated" />
+                <Label for="sort-updated" class="font-normal cursor-pointer">最新更新</Label>
               </div>
               <div class="flex items-center space-x-2">
-                <RadioGroupItem
-                  id="sort-created"
-                  value="created"
-                />
-                <Label
-                  for="sort-created"
-                  class="font-normal cursor-pointer"
-                >最新创建</Label>
+                <RadioGroupItem id="sort-created" value="created" />
+                <Label for="sort-created" class="font-normal cursor-pointer">最新创建</Label>
               </div>
             </RadioGroup>
           </div>
@@ -274,13 +263,8 @@ function openExternal(url: string) {
         </div>
 
         <!-- 加载中 -->
-        <div
-          v-if="marketplaceStore.loading"
-          class="flex items-center justify-center py-12"
-        >
-          <p class="text-muted-foreground">
-            加载中...
-          </p>
+        <div v-if="marketplaceStore.loading" class="flex items-center justify-center py-12">
+          <p class="text-muted-foreground">加载中...</p>
         </div>
 
         <!-- 服务器卡片网格 -->
@@ -300,17 +284,10 @@ function openExternal(url: string) {
                   {{ item.displayName }}
                 </CardTitle>
                 <div class="flex items-center gap-1 shrink-0">
-                  <Badge
-                    v-if="item.official"
-                    variant="default"
-                    class="text-xs whitespace-nowrap"
-                  >
+                  <Badge v-if="item.official" variant="default" class="text-xs whitespace-nowrap">
                     官方
                   </Badge>
-                  <Badge
-                    variant="secondary"
-                    class="text-xs whitespace-nowrap"
-                  >
+                  <Badge variant="secondary" class="text-xs whitespace-nowrap">
                     {{ item.language }}
                   </Badge>
                 </div>
@@ -319,7 +296,7 @@ function openExternal(url: string) {
                 {{ item.descriptionZh || item.description }}
               </CardDescription>
             </CardHeader>
-          
+
             <CardContent class="flex-1">
               <div class="flex items-center justify-between text-xs text-muted-foreground mb-2">
                 <div class="flex items-center gap-1">
@@ -337,19 +314,11 @@ function openExternal(url: string) {
             </CardContent>
 
             <CardFooter class="flex gap-2 mt-auto">
-              <Button
-                size="sm"
-                class="flex-1"
-                @click.stop="openInstallDialog(item)"
-              >
+              <Button size="sm" class="flex-1" @click.stop="openInstallDialog(item)">
                 <Download class="h-3 w-3 mr-1" />
                 安装
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                @click.stop="openDetailsDialog(item)"
-              >
+              <Button size="sm" variant="outline" @click.stop="openDetailsDialog(item)">
                 详情
               </Button>
             </CardFooter>
@@ -357,13 +326,8 @@ function openExternal(url: string) {
         </div>
 
         <!-- 空状态 -->
-        <div
-          v-else
-          class="flex items-center justify-center py-12"
-        >
-          <p class="text-muted-foreground">
-            没有找到匹配的服务器
-          </p>
+        <div v-else class="flex items-center justify-center py-12">
+          <p class="text-muted-foreground">没有找到匹配的服务器</p>
         </div>
       </div>
     </div>
@@ -373,20 +337,14 @@ function openExternal(url: string) {
       <DialogContent class="max-w-md">
         <DialogHeader>
           <DialogTitle>安装 {{ currentItem?.displayName }}</DialogTitle>
-          <DialogDescription>
-            配置服务器安装选项
-          </DialogDescription>
+          <DialogDescription> 配置服务器安装选项 </DialogDescription>
         </DialogHeader>
-        
+
         <div class="space-y-4 py-4">
           <!-- 服务器名称 -->
           <div class="space-y-2">
             <Label for="server-name">服务器名称</Label>
-            <Input
-              id="server-name"
-              v-model="installConfig.name"
-              placeholder="输入服务器名称"
-            />
+            <Input id="server-name" v-model="installConfig.name" placeholder="输入服务器名称" />
           </div>
 
           <!-- 工作目录 -->
@@ -398,7 +356,8 @@ function openExternal(url: string) {
               placeholder="服务器的工作目录"
             />
             <p class="text-xs text-muted-foreground">
-              💡 服务器运行时的工作目录。对于 npx 包，程序本身由 npx 管理，此目录用于存放服务器产生的数据和配置文件。
+              💡 服务器运行时的工作目录。对于 npx 包，程序本身由 npx
+              管理，此目录用于存放服务器产生的数据和配置文件。
             </p>
           </div>
 
@@ -418,24 +377,15 @@ function openExternal(url: string) {
               <li>创建服务器配置</li>
               <li>添加到服务器列表</li>
             </ul>
-            <p class="mt-2 text-xs">
-              📦 注意：npx 包会在首次运行时自动下载，无需手动安装
-            </p>
+            <p class="mt-2 text-xs">📦 注意：npx 包会在首次运行时自动下载，无需手动安装</p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            :disabled="installing"
-            @click="showInstallDialog = false"
-          >
+          <Button variant="outline" :disabled="installing" @click="showInstallDialog = false">
             取消
           </Button>
-          <Button
-            :disabled="installing || !installConfig.name"
-            @click="handleInstall"
-          >
+          <Button :disabled="installing || !installConfig.name" @click="handleInstall">
             {{ installing ? '安装中...' : '安装' }}
           </Button>
         </DialogFooter>
@@ -448,25 +398,15 @@ function openExternal(url: string) {
         <DialogHeader>
           <DialogTitle class="flex items-center gap-2">
             {{ currentItem?.displayName }}
-            <Badge
-              v-if="currentItem?.official"
-              variant="default"
-              class="ml-2"
-            >
-              官方
-            </Badge>
+            <Badge v-if="currentItem?.official" variant="default" class="ml-2"> 官方 </Badge>
           </DialogTitle>
-          <DialogDescription>
-            by {{ currentItem?.author }}
-          </DialogDescription>
+          <DialogDescription> by {{ currentItem?.author }} </DialogDescription>
         </DialogHeader>
 
         <div class="space-y-4 py-4">
           <!-- 基本信息 -->
           <div>
-            <h3 class="font-medium mb-2">
-              描述
-            </h3>
+            <h3 class="font-medium mb-2">描述</h3>
             <p class="text-sm text-muted-foreground">
               {{ currentItem?.descriptionZh || currentItem?.description }}
             </p>
@@ -495,11 +435,7 @@ function openExternal(url: string) {
           <div v-if="currentItem?.category && currentItem.category.length > 0">
             <Label class="text-xs text-muted-foreground">分类</Label>
             <div class="flex flex-wrap gap-2 mt-2">
-              <Badge
-                v-for="cat in currentItem.category"
-                :key="cat"
-                variant="outline"
-              >
+              <Badge v-for="cat in currentItem.category" :key="cat" variant="outline">
                 {{ cat }}
               </Badge>
             </div>
@@ -537,12 +473,7 @@ function openExternal(url: string) {
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            @click="showDetailsDialog = false"
-          >
-            关闭
-          </Button>
+          <Button variant="outline" @click="showDetailsDialog = false"> 关闭 </Button>
           <Button @click="openInstallDialog(currentItem!); showDetailsDialog = false">
             <Download class="h-4 w-4 mr-2" />
             安装
@@ -552,4 +483,3 @@ function openExternal(url: string) {
     </Dialog>
   </div>
 </template>
-

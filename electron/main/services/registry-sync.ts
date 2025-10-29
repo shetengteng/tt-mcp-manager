@@ -417,52 +417,66 @@ export class RegistrySyncService {
   /**
    * 查询服务器
    */
-  searchServers(query?: string, category?: string): MarketItem[] {
-    const db = database.getDatabase()
+  searchServers(query?: string, category?: string, language?: string): MarketItem[] {
+    try {
+      const db = database.getDatabase()
 
-    let sql = 'SELECT * FROM marketplace_servers WHERE 1=1'
-    const params: any[] = []
+      let sql = 'SELECT * FROM marketplace_servers WHERE 1=1'
+      const params: any[] = []
 
-    if (category && category !== '' && category !== 'all') {
-      sql += ' AND category LIKE ?'
-      params.push(`%"${category}"%`)
+      // 分类筛选
+      if (category && category !== '' && category !== 'all') {
+        sql += ' AND category LIKE ?'
+        params.push(`%"${category}"%`)
+      }
+
+      // 语言筛选
+      if (language && language !== '') {
+        sql += ' AND language = ?'
+        params.push(language)
+      }
+
+      // 搜索查询
+      if (query && query.trim()) {
+        sql += ' AND (name LIKE ? OR display_name LIKE ? OR description LIKE ?)'
+        const searchTerm = `%${query}%`
+        params.push(searchTerm, searchTerm, searchTerm)
+      }
+
+      sql += ' ORDER BY official DESC, stars DESC LIMIT 1000'
+
+      const stmt = db.prepare(sql)
+      const rows = stmt.all(...params) as any[]
+
+      return rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        displayName: row.display_name,
+        fullName: row.full_name,
+        description: row.description,
+        stars: row.stars,
+        forks: row.forks || 0,
+        language: row.language,
+        topics: JSON.parse(row.topics || '[]'),
+        githubUrl: row.github_url,
+        homepage: row.homepage,
+        license: row.license,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        npmPackage: row.npm_package,
+        pythonPackage: row.python_package,
+        downloadCount: row.download_count || 0,
+        category: JSON.parse(row.category || '[]'),
+        installType: row.install_type,
+        installCommand: row.install_command,
+        author: row.author,
+        official: row.official === 1
+      }))
+    } catch (error: any) {
+      // 如果数据库未初始化或查询失败，返回空数组
+      console.warn('[RegistrySync] searchServers 失败:', error.message)
+      return []
     }
-
-    if (query && query.trim()) {
-      sql += ' AND (name LIKE ? OR display_name LIKE ? OR description LIKE ?)'
-      const searchTerm = `%${query}%`
-      params.push(searchTerm, searchTerm, searchTerm)
-    }
-
-    sql += ' ORDER BY official DESC, stars DESC LIMIT 1000'
-
-    const stmt = db.prepare(sql)
-    const rows = stmt.all(...params) as any[]
-
-    return rows.map(row => ({
-      id: row.id,
-      name: row.name,
-      displayName: row.display_name,
-      fullName: row.full_name,
-      description: row.description,
-      stars: row.stars,
-      forks: row.forks || 0,
-      language: row.language,
-      topics: JSON.parse(row.topics || '[]'),
-      githubUrl: row.github_url,
-      homepage: row.homepage,
-      license: row.license,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      npmPackage: row.npm_package,
-      pythonPackage: row.python_package,
-      downloadCount: row.download_count || 0,
-      category: JSON.parse(row.category || '[]'),
-      installType: row.install_type,
-      installCommand: row.install_command,
-      author: row.author,
-      official: row.official === 1
-    }))
   }
 
   /**
