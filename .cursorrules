@@ -1,5 +1,3 @@
-# Cursor Rules for tt-paikebao Project
-
 ## 执行脚本
 ---
 description:
@@ -30,7 +28,7 @@ def read_prompts_file(filename='prompts.txt'):
     """读取prompts文件并返回所有内容"""
     if not os.path.exists(filename):
         return None
-    
+
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read().strip()
@@ -38,13 +36,13 @@ def read_prompts_file(filename='prompts.txt'):
                 return content
     except Exception as e:
         print(f"读取文件 {filename} 时出错: {e}")
-    
+
     return None
 
 
 def main():
     """主函数"""
-      
+
     # 默认行为：检测prompts.txt
     content = read_prompts_file()
     if content:
@@ -58,7 +56,7 @@ def main():
         return
 
 if __name__ == "__main__":
-    main() 
+    main()
      ```
 
 2. **Main Workflow**:
@@ -84,7 +82,7 @@ if __name__ == "__main__":
 
 ## 编程语言规则
 - 这是一个基于 UniApp 的 Vue.js 项目
-- 主要使用 Vue 3 组合式 API 
+- 主要使用 Vue 3 组合式 API
 - 样式使用 SCSS
 
 ## 注释规则 (Critical - MUST Follow)
@@ -136,17 +134,17 @@ const handleEvent = (data) => {
     showError('数据为空')
     return
   }
-  
+
   if (!data.isValid) {
     showError('数据无效')
     return
   }
-  
+
   if (!data.permissions.includes('edit')) {
     showError('无权限')
     return
   }
-  
+
   // 主要逻辑清晰可见
   processData(data)
 }

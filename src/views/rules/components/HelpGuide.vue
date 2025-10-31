@@ -96,6 +96,26 @@ const isExpanded = ref(false)
               </ul>
             </div>
           </div>
+
+          <!-- 全局级别 -->
+          <div class="p-3 bg-white rounded-md border">
+            <div class="flex items-center gap-2 mb-2">
+              <Badge variant="outline"> 全局级别 </Badge>
+            </div>
+            <p class="text-muted-foreground text-xs leading-relaxed mb-2">
+              在用户主目录的
+              <code class="px-1 py-0.5 bg-muted rounded text-xs">~/.cursor/rules/</code>
+              文件夹中创建规则文件，对所有项目和工作区生效。
+            </p>
+            <div class="text-xs text-muted-foreground">
+              <div class="font-medium mb-1">适用场景：</div>
+              <ul class="list-disc list-inside space-y-0.5 ml-2">
+                <li>个人通用的编码风格和习惯</li>
+                <li>跨所有项目的基础规范</li>
+                <li>常用的代码质量标准</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -92,7 +92,12 @@ function openDetailsDialog(rule: CursorRule) {
 
 // 执行安装
 async function handleInstall() {
-  if (!currentRule.value || !installConfig.value.targetPath) {
+  if (!currentRule.value) {
+    return
+  }
+
+  // 全局安装不需要选择路径
+  if (!installConfig.value.targetPath && installConfig.value.installType !== 'global') {
     toast({
       title: '错误',
       description: '请选择安装路径',
@@ -104,7 +109,14 @@ async function handleInstall() {
 
   installing.value = true
   try {
-    const result = await rulesStore.install(currentRule.value.id, installConfig.value)
+    // 构造符合 RuleInstallConfig 接口的配置对象
+    const config = {
+      targetPath: installConfig.value.targetPath,
+      installType: installConfig.value.installType,
+      enabled: installConfig.value.enabled
+    }
+
+    const result = await rulesStore.install(currentRule.value.id, config)
 
     if (result.success) {
       showInstallDialog.value = false
@@ -345,7 +357,7 @@ async function selectFolder() {
 
         <div class="space-y-4 py-4">
           <!-- 安装路径 -->
-          <div class="space-y-2">
+          <div v-if="installConfig.installType !== 'global'" class="space-y-2">
             <Label for="target-path">安装路径</Label>
             <div class="flex gap-2">
               <Input
@@ -354,9 +366,19 @@ async function selectFolder() {
                 placeholder="选择项目或工作区路径"
                 readonly
               />
-              <Button @click="selectFolder">选择</Button>
+              <Button @click="selectFolder"> 选择 </Button>
             </div>
             <p class="text-xs text-muted-foreground">选择你的项目根目录或工作区目录</p>
+          </div>
+
+          <!-- 全局安装提示 -->
+          <div v-else class="p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <p class="text-sm text-purple-900">
+              <span class="font-medium">全局安装</span> - 规则将安装到用户主目录，对所有项目生效
+            </p>
+            <p class="text-xs text-purple-700 mt-1">
+              路径：<code class="px-1 py-0.5 bg-purple-100 rounded">~/.cursor/rules/</code>
+            </p>
           </div>
 
           <!-- 安装类型 -->
@@ -396,6 +418,21 @@ async function selectFolder() {
                   </Label>
                 </div>
               </div>
+              <div
+                class="flex items-start space-x-2 p-3 rounded-lg border cursor-pointer hover:bg-accent transition-colors"
+              >
+                <RadioGroupItem id="type-global" value="global" class="mt-1" />
+                <div class="flex-1">
+                  <Label for="type-global" class="font-normal cursor-pointer">
+                    <div class="mb-1">全局级别</div>
+                    <p class="text-xs text-muted-foreground leading-relaxed">
+                      在用户主目录
+                      <code class="px-1 py-0.5 bg-muted rounded">~/.cursor/rules/</code>
+                      创建规则文件， 对所有项目和工作区生效
+                    </p>
+                  </Label>
+                </div>
+              </div>
             </RadioGroup>
           </div>
 
@@ -414,7 +451,12 @@ async function selectFolder() {
           <Button variant="outline" :disabled="installing" @click="showInstallDialog = false">
             取消
           </Button>
-          <Button :disabled="installing || !installConfig.targetPath" @click="handleInstall">
+          <Button
+            :disabled="
+              installing || (installConfig.installType !== 'global' && !installConfig.targetPath)
+            "
+            @click="handleInstall"
+          >
             {{ installing ? '安装中...' : '安装' }}
           </Button>
         </DialogFooter>
@@ -427,7 +469,7 @@ async function selectFolder() {
         <DialogHeader>
           <DialogTitle class="flex items-center gap-2">
             {{ currentRule?.displayName }}
-            <Badge v-if="currentRule?.official" variant="default" class="ml-2">官方</Badge>
+            <Badge v-if="currentRule?.official" variant="default" class="ml-2"> 官方 </Badge>
           </DialogTitle>
           <DialogDescription>by {{ currentRule?.author }}</DialogDescription>
         </DialogHeader>
@@ -473,7 +515,7 @@ async function selectFolder() {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" @click="showDetailsDialog = false">关闭</Button>
+          <Button variant="outline" @click="showDetailsDialog = false"> 关闭 </Button>
           <Button
             @click="
               () => {

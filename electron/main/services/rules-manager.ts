@@ -27,25 +27,20 @@ export class RulesManager {
     // 确定安装路径
     const installPath = this.resolveInstallPath(config.targetPath, config.installType)
 
-    // 写入规则文件
-    await this.writeRuleFile(installPath, config.installType, rule.content)
+    // 写入规则文件并获取实际文件路径
+    const actualFilePath = await this.writeRuleFile(installPath, config.installType, rule.content)
 
     // 记录安装信息
-    this.database.recordInstallation(ruleId, installPath, config.installType)
+    this.database.recordInstallation(ruleId, actualFilePath, config.installType)
 
-    console.log(`✓ 规则 "${rule.displayName}" 已安装到: ${installPath}`)
+    console.log(`✓ 规则 "${rule.displayName}" 已安装到: ${actualFilePath}`)
   }
 
   /**
    * 解析安装路径
    */
   private resolveInstallPath(targetPath: string, installType: string): string {
-    // 如果是绝对路径，直接使用
-    if (path.isAbsolute(targetPath)) {
-      return targetPath
-    }
-
-    // 否则，根据安装类型处理
+    // 根据安装类型处理路径
     switch (installType) {
       case 'project':
         // 项目级别：在目标路径下创建 .cursorrules 文件
@@ -55,7 +50,8 @@ export class RulesManager {
         return path.join(targetPath, '.cursor', 'rules')
       case 'global':
         // 全局级别：用户主目录
-        return path.join(process.env.HOME || process.env.USERPROFILE || '~', '.cursor', 'rules')
+        const homeDir = process.env.HOME || process.env.USERPROFILE || '~'
+        return path.join(homeDir, '.cursor', 'rules')
       default:
         throw new Error(`未知的安装类型: ${installType}`)
     }
@@ -63,20 +59,24 @@ export class RulesManager {
 
   /**
    * 写入规则文件
+   * @returns 返回实际写入的文件路径
    */
   private async writeRuleFile(
     installPath: string,
     installType: string,
     content: string
-  ): Promise<void> {
+  ): Promise<string> {
     if (installType === 'project') {
       // 项目级别：直接写入 .cursorrules 文件
       await fs.writeFile(installPath, content, 'utf-8')
+      return installPath
     } else {
       // 工作区/全局级别：写入 .cursor/rules/ 目录
       await fs.mkdir(installPath, { recursive: true })
       const fileName = `rule-${Date.now()}.md`
-      await fs.writeFile(path.join(installPath, fileName), content, 'utf-8')
+      const filePath = path.join(installPath, fileName)
+      await fs.writeFile(filePath, content, 'utf-8')
+      return filePath
     }
   }
 

@@ -269,7 +269,6 @@ export interface InstalledRule {
  * Rule 安装配置
  */
 export interface RuleInstallConfig {
-  ruleId: number
   targetPath: string
   installType: 'project' | 'workspace' | 'global'
   enabled: boolean
