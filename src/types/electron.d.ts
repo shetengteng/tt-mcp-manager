@@ -105,7 +105,10 @@ export interface ElectronAPI {
     }>
     getDetails: (repoFullName: string) => Promise<any>
     getReadme: (repoFullName: string) => Promise<string>
-    install: (item: MarketItem, config: any) => Promise<{ success: boolean; serverId?: string; error?: string }>
+    install: (
+      item: MarketItem,
+      config: any
+    ) => Promise<{ success: boolean; serverId?: string; error?: string }>
   }
 
   template: {
@@ -128,6 +131,91 @@ export interface ElectronAPI {
     update: (settings: any) => Promise<{ success: boolean }>
     selectFolder: () => Promise<{ success: boolean; path?: string; canceled?: boolean }>
   }
+
+  rules: {
+    search: (options: RuleSearchOptions) => Promise<RuleSearchResult>
+    getById: (id: number) => Promise<CursorRule | null>
+    install: (
+      ruleId: number,
+      config: RuleInstallConfig
+    ) => Promise<{ success: boolean; error?: string }>
+    uninstall: (installId: number) => Promise<{ success: boolean; error?: string }>
+    toggle: (installId: number, enabled: boolean) => Promise<{ success: boolean; error?: string }>
+    getInstalled: () => Promise<InstalledRule[]>
+    importLocalRules: () => Promise<{ success: number; failed: number }>
+  }
+}
+
+/**
+ * Cursor Rule 规则
+ */
+export interface CursorRule {
+  id: number
+  name: string
+  displayName: string
+  description: string
+  descriptionZh?: string
+  author: string
+  language: string
+  category: string[]
+  tags: string[]
+  content: string
+  sourceUrl: string
+  stars: number
+  downloads: number
+  lastUpdated: string
+  version: string
+  official: boolean
+  license?: string
+  scope: 'project' | 'workspace' | 'global'
+  globs?: string
+}
+
+/**
+ * Rule 搜索选项
+ */
+export interface RuleSearchOptions {
+  query?: string
+  category?: string
+  language?: string
+  sort: 'stars' | 'updated' | 'downloads' | 'created'
+  page: number
+  perPage: number
+}
+
+/**
+ * Rule 搜索结果
+ */
+export interface RuleSearchResult {
+  total: number
+  page: number
+  perPage: number
+  items: CursorRule[]
+}
+
+/**
+ * 已安装的 Rule
+ */
+export interface InstalledRule {
+  id: number
+  ruleId: number
+  ruleName: string
+  displayName: string
+  installPath: string
+  installType: 'project' | 'workspace' | 'global'
+  enabled: boolean
+  installedAt: string
+  lastUpdated?: string
+}
+
+/**
+ * Rule 安装配置
+ */
+export interface RuleInstallConfig {
+  ruleId: number
+  targetPath: string
+  installType: 'project' | 'workspace' | 'global'
+  enabled: boolean
 }
 
 declare global {
@@ -135,4 +223,3 @@ declare global {
     electronAPI: ElectronAPI
   }
 }
-

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // 主布局组件 - 使用 Shadcn Sidebar
 import { useRouter, useRoute } from 'vue-router'
-import { LayoutDashboard, Store, FileText, Settings } from 'lucide-vue-next'
+import { LayoutDashboard, Store, FileText, Settings, BookOpen } from 'lucide-vue-next'
 import {
   Sidebar,
   SidebarContent,
@@ -32,6 +32,11 @@ const menuItems = [
     title: '市场',
     icon: Store,
     path: '/marketplace'
+  },
+  {
+    title: 'Cursor Rules',
+    icon: BookOpen,
+    path: '/rules'
   },
   {
     title: '模板',

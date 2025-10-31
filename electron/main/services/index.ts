@@ -7,6 +7,9 @@ import { SettingsManager } from './settings-manager'
 import { MCPRegistryService } from './mcp-registry'
 import { database } from './database'
 import { registrySync } from './registry-sync'
+import { RulesImporter } from './rules-importer'
+import { RulesDatabase } from './rules-database'
+import { RulesManager } from './rules-manager'
 
 // 创建服务实例
 export const processManager = new ProcessManager()
@@ -16,6 +19,9 @@ export const marketplaceService = new MarketplaceService()
 export const templateManager = new TemplateManager()
 export const settingsManager = new SettingsManager()
 export const mcpRegistry = new MCPRegistryService()
+export const rulesImporter = new RulesImporter()
+export const rulesDatabase = new RulesDatabase()
+export const rulesManager = new RulesManager()
 
 // 导出数据库和同步服务
 export { database, registrySync }
@@ -47,6 +53,20 @@ export async function initializeServices(): Promise<void> {
   // 6. 启动 Registry 同步服务
   registrySync.start()
   console.log('✓ Registry 同步服务已启动')
+
+  // 7. 初始化 Cursor Rules（如果数据库为空则导入）
+  try {
+    const needImport = await rulesImporter.shouldReimport()
+    if (needImport) {
+      console.log('首次启动，开始导入 Cursor Rules 到数据库...')
+      const stats = await rulesImporter.importLocalRules()
+      console.log(`✓ Cursor Rules 导入完成: 成功 ${stats.success} 条，失败 ${stats.failed} 条`)
+    } else {
+      console.log('✓ Cursor Rules 数据库已有数据')
+    }
+  } catch (error) {
+    console.error('✗ Cursor Rules 导入失败:', error)
+  }
 
   // 连接进程管理器和日志管理器
   processManager.on('log:new', logEntry => {

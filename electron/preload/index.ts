@@ -28,8 +28,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     clear: (serverId: string) => ipcRenderer.invoke('log:clear', serverId),
     export: (serverId: string, filePath: string) =>
       ipcRenderer.invoke('log:export', serverId, filePath),
-    search: (serverId: string, query: string) =>
-      ipcRenderer.invoke('log:search', serverId, query),
+    search: (serverId: string, query: string) => ipcRenderer.invoke('log:search', serverId, query),
     // 订阅日志更新
     onLog: (callback: (data: any) => void) => {
       const subscription = (_: any, data: any) => callback(data)
@@ -61,7 +60,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     export: () => ipcRenderer.invoke('config:export'),
     exportToFile: (filePath: string) => ipcRenderer.invoke('config:exportToFile', filePath),
     import: (filePath: string) => ipcRenderer.invoke('config:import', filePath),
-    syncSingleToCursor: (serverId: string) => ipcRenderer.invoke('config:syncSingleToCursor', serverId),
+    syncSingleToCursor: (serverId: string) =>
+      ipcRenderer.invoke('config:syncSingleToCursor', serverId),
     syncToCursor: () => ipcRenderer.invoke('config:syncToCursor')
   },
 
@@ -70,6 +70,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     get: () => ipcRenderer.invoke('settings:get'),
     update: (settings: any) => ipcRenderer.invoke('settings:update', settings),
     selectFolder: () => ipcRenderer.invoke('settings:selectFolder')
+  },
+
+  // Cursor Rules 管理
+  rules: {
+    search: (options: any) => ipcRenderer.invoke('rules:search', options),
+    getById: (id: number) => ipcRenderer.invoke('rules:getById', id),
+    install: (ruleId: number, config: any) => ipcRenderer.invoke('rules:install', ruleId, config),
+    uninstall: (installId: number) => ipcRenderer.invoke('rules:uninstall', installId),
+    toggle: (installId: number, enabled: boolean) =>
+      ipcRenderer.invoke('rules:toggle', installId, enabled),
+    getInstalled: () => ipcRenderer.invoke('rules:getInstalled'),
+    importLocalRules: () => ipcRenderer.invoke('rules:importLocalRules')
   }
 })
-

@@ -191,10 +191,100 @@ export interface ValidationResult {
  * Cursor 配置格式
  */
 export interface CursorConfig {
-  mcpServers: Record<string, {
-    command: string
-    args: string[]
-    env?: Record<string, string>
-  }>
+  mcpServers: Record<
+    string,
+    {
+      command: string
+      args: string[]
+      env?: Record<string, string>
+    }
+  >
 }
 
+/**
+ * Cursor Rule 规则
+ */
+export interface CursorRule {
+  id: number
+  name: string
+  displayName: string
+  description: string
+  descriptionZh?: string
+  author: string
+  language: string
+  category: string[]
+  tags: string[]
+  content: string
+  sourceUrl: string
+  stars: number
+  downloads: number
+  lastUpdated: string
+  version: string
+  official: boolean
+  license?: string
+  scope: 'project' | 'workspace' | 'global'
+  globs?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+/**
+ * Rule 搜索选项
+ */
+export interface RuleSearchOptions {
+  query?: string
+  category?: string
+  language?: string
+  sort: 'stars' | 'updated' | 'downloads' | 'created'
+  page: number
+  perPage: number
+}
+
+/**
+ * Rule 搜索结果
+ */
+export interface RuleSearchResult {
+  total: number
+  page: number
+  perPage: number
+  items: CursorRule[]
+}
+
+/**
+ * 已安装的 Rule
+ */
+export interface InstalledRule {
+  id: number
+  ruleId: number
+  ruleName: string
+  displayName: string
+  installPath: string
+  installType: 'project' | 'workspace' | 'global'
+  enabled: boolean
+  installedAt: string
+  lastUpdated?: string
+}
+
+/**
+ * Rule 安装配置
+ */
+export interface RuleInstallConfig {
+  ruleId: number
+  targetPath: string
+  installType: 'project' | 'workspace' | 'global'
+  enabled: boolean
+}
+
+/**
+ * Rule 前端数据
+ */
+export interface RuleFrontmatter {
+  description?: string
+  globs?: string
+  tags?: string[]
+  category?: string[]
+  language?: string
+  author?: string
+  version?: string
+  license?: string
+}

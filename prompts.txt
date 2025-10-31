@@ -20,3 +20,11 @@ https://cdn.jsdelivr.net/gh/PatrickJS/awesome-cursorrules@main/data/rules.json
 这个写入到 md文档中
 
 使用方案1 ，开始写代码
+
+继续
+
+rules中安装的方式给出说明，便于第一次使用的人
+
+直接点击安装rule是时候，在弹框中进行简短的说明
+
+点击 指南的时候，没有上下滚动条，导致太高了

@@ -13,6 +13,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/marketplace/index.vue')
   },
   {
+    path: '/rules',
+    name: 'Rules',
+    component: () => import('@/views/rules/index.vue')
+  },
+  {
     path: '/templates',
     name: 'Templates',
     component: () => import('@/views/templates/index.vue')
@@ -30,4 +35,3 @@ const router = createRouter({
 })
 
 export default router
-

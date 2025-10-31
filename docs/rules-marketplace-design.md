@@ -1082,13 +1082,15 @@ globs: **/*.vue, **/*.ts, components/**/*
 # Vue.js Best Practices
 
 ## Component Structure
+
 - Use Composition API over Options API
 - Keep components small and focused
 - Use proper TypeScript integration
-...
+  ...
 ```
 
 **数据来源：**
+
 - Cursor Directory 网站导出
 - GitHub 社区收集
 - 官方框架指南整理
@@ -1294,19 +1296,19 @@ export class RulesFileParser {
     try {
       const content = await fs.readFile(filePath, 'utf-8')
       const fileName = path.basename(filePath, path.extname(filePath))
-      
+
       // 提取 frontmatter
       const frontmatter = this.extractFrontmatter(content)
-      
+
       // 提取内容（去除 frontmatter）
       const ruleContent = this.extractContent(content)
-      
+
       // 从文件名推断语言
       const language = this.inferLanguage(fileName, frontmatter)
-      
+
       // 从描述推断分类
       const category = this.inferCategory(frontmatter, fileName)
-      
+
       return {
         id: 0, // 数据库自动生成
         name: fileName,
@@ -1332,25 +1334,25 @@ export class RulesFileParser {
       return null
     }
   }
-  
+
   /**
    * 提取 YAML frontmatter
    */
   private extractFrontmatter(content: string): RuleFrontmatter {
     const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---/
     const match = content.match(frontmatterRegex)
-    
+
     if (!match) return {}
-    
+
     const frontmatter: RuleFrontmatter = {}
     const lines = match[1].split('\n')
-    
+
     for (const line of lines) {
       const [key, ...valueParts] = line.split(':')
       if (key && valueParts.length > 0) {
         const value = valueParts.join(':').trim()
         const cleanKey = key.trim() as keyof RuleFrontmatter
-        
+
         // 处理数组类型（tags, category）
         if (cleanKey === 'tags' || cleanKey === 'category') {
           frontmatter[cleanKey] = value.split(',').map(v => v.trim())
@@ -1359,10 +1361,10 @@ export class RulesFileParser {
         }
       }
     }
-    
+
     return frontmatter
   }
-  
+
   /**
    * 提取内容（去除 frontmatter）
    */
@@ -1370,7 +1372,7 @@ export class RulesFileParser {
     const frontmatterRegex = /^---\s*\n[\s\S]*?\n---\s*\n/
     return content.replace(frontmatterRegex, '').trim()
   }
-  
+
   /**
    * 从文件名推断编程语言
    */
@@ -1379,44 +1381,44 @@ export class RulesFileParser {
     if (frontmatter.language) {
       return frontmatter.language
     }
-    
+
     // 语言映射表
     const languageMap: Record<string, string> = {
-      'vue': 'Vue',
-      'react': 'React',
-      'typescript': 'TypeScript',
-      'javascript': 'JavaScript',
-      'python': 'Python',
-      'rust': 'Rust',
-      'go': 'Go',
-      'java': 'Java',
-      'cpp': 'C++',
-      'csharp': 'C#',
-      'php': 'PHP',
-      'ruby': 'Ruby',
-      'swift': 'Swift',
-      'kotlin': 'Kotlin',
-      'nextjs': 'Next.js',
-      'nuxtjs': 'Nuxt.js',
-      'svelte': 'Svelte',
-      'angular': 'Angular',
-      'fastapi': 'FastAPI',
-      'django': 'Django',
-      'flask': 'Flask',
-      'express': 'Express',
-      'nestjs': 'NestJS'
+      vue: 'Vue',
+      react: 'React',
+      typescript: 'TypeScript',
+      javascript: 'JavaScript',
+      python: 'Python',
+      rust: 'Rust',
+      go: 'Go',
+      java: 'Java',
+      cpp: 'C++',
+      csharp: 'C#',
+      php: 'PHP',
+      ruby: 'Ruby',
+      swift: 'Swift',
+      kotlin: 'Kotlin',
+      nextjs: 'Next.js',
+      nuxtjs: 'Nuxt.js',
+      svelte: 'Svelte',
+      angular: 'Angular',
+      fastapi: 'FastAPI',
+      django: 'Django',
+      flask: 'Flask',
+      express: 'Express',
+      nestjs: 'NestJS'
     }
-    
+
     const lowerFileName = fileName.toLowerCase()
     for (const [key, value] of Object.entries(languageMap)) {
       if (lowerFileName.includes(key)) {
         return value
       }
     }
-    
+
     return 'General'
   }
-  
+
   /**
    * 推断分类
    */
@@ -1424,13 +1426,17 @@ export class RulesFileParser {
     if (frontmatter.category && frontmatter.category.length > 0) {
       return frontmatter.category
     }
-    
+
     const categories: string[] = []
     const lowerFileName = fileName.toLowerCase()
     const lowerDesc = (frontmatter.description || '').toLowerCase()
-    
+
     // 分类映射
-    if (lowerFileName.includes('react') || lowerFileName.includes('vue') || lowerFileName.includes('angular')) {
+    if (
+      lowerFileName.includes('react') ||
+      lowerFileName.includes('vue') ||
+      lowerFileName.includes('angular')
+    ) {
       categories.push('前端框架')
     }
     if (lowerFileName.includes('typescript') || lowerFileName.includes('javascript')) {
@@ -1448,10 +1454,10 @@ export class RulesFileParser {
     if (lowerFileName.includes('clean') || lowerDesc.includes('best practice')) {
       categories.push('最佳实践')
     }
-    
+
     return categories.length > 0 ? categories : ['通用']
   }
-  
+
   /**
    * 从内容中提取标签
    */
@@ -1460,14 +1466,14 @@ export class RulesFileParser {
     const tags: string[] = []
     const headingRegex = /^##\s+(.+)$/gm
     let match
-    
+
     while ((match = headingRegex.exec(content)) !== null) {
       tags.push(match[1].trim())
     }
-    
+
     return tags.slice(0, 10) // 最多10个标签
   }
-  
+
   /**
    * 格式化显示名称
    */
@@ -1478,19 +1484,19 @@ export class RulesFileParser {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
   }
-  
+
   /**
    * 批量解析目录下的所有规则文件
    */
   async parseRulesDirectory(directoryPath: string): Promise<CursorRule[]> {
     const rules: CursorRule[] = []
-    
+
     async function walkDirectory(dir: string) {
       const entries = await fs.readdir(dir, { withFileTypes: true })
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name)
-        
+
         if (entry.isDirectory()) {
           await walkDirectory(fullPath)
         } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdc')) {
@@ -1502,7 +1508,7 @@ export class RulesFileParser {
         }
       }
     }
-    
+
     await walkDirectory(directoryPath)
     return rules
   }
@@ -1521,33 +1527,30 @@ import { RulesFileParser } from './rules-parser'
 export class RulesImporter {
   private database: RulesDatabase
   private parser: RulesFileParser
-  
+
   constructor() {
     this.database = new RulesDatabase()
     this.parser = new RulesFileParser()
   }
-  
+
   /**
    * 从本地文件导入所有规则到数据库
    */
   async importLocalRules(): Promise<{ success: number; failed: number }> {
     console.log('开始导入本地 Cursor Rules...')
-    
+
     const stats = { success: 0, failed: 0 }
-    
+
     // 数据目录路径
     const dataPath = app.isPackaged
       ? path.join(process.resourcesPath, 'src', 'data')
       : path.join(app.getAppPath(), 'src', 'data')
-    
-    const rulesDirectories = [
-      path.join(dataPath, 'rules'),
-      path.join(dataPath, 'rules-new')
-    ]
-    
+
+    const rulesDirectories = [path.join(dataPath, 'rules'), path.join(dataPath, 'rules-new')]
+
     // 解析所有规则文件
     const allRules: CursorRule[] = []
-    
+
     for (const dir of rulesDirectories) {
       try {
         console.log(`正在扫描目录: ${dir}`)
@@ -1558,13 +1561,13 @@ export class RulesImporter {
         console.error(`✗ ${dir}: 扫描失败`, error)
       }
     }
-    
+
     console.log(`\n共解析 ${allRules.length} 条规则，开始导入数据库...`)
-    
+
     // 去重（根据 name）
     const uniqueRules = this.deduplicateRules(allRules)
     console.log(`去重后：${uniqueRules.length} 条规则`)
-    
+
     // 批量导入数据库
     try {
       const count = this.database.bulkUpsertRules(uniqueRules)
@@ -1574,38 +1577,38 @@ export class RulesImporter {
       console.error('✗ 导入数据库失败:', error)
       stats.failed = uniqueRules.length
     }
-    
+
     return stats
   }
-  
+
   /**
    * 去重规则（保留最新的）
    */
   private deduplicateRules(rules: CursorRule[]): CursorRule[] {
     const ruleMap = new Map<string, CursorRule>()
-    
+
     for (const rule of rules) {
       const existing = ruleMap.get(rule.name)
       if (!existing || rule.lastUpdated > existing.lastUpdated) {
         ruleMap.set(rule.name, rule)
       }
     }
-    
+
     return Array.from(ruleMap.values())
   }
-  
+
   /**
    * 检查是否需要重新导入
    */
   async shouldReimport(): Promise<boolean> {
     // 检查数据库中的规则数量
     const dbRulesCount = await this.database.getRulesCount()
-    
+
     // 如果数据库为空，需要导入
     if (dbRulesCount === 0) {
       return true
     }
-    
+
     // 检查最后导入时间（可以添加更多逻辑）
     return false
   }
@@ -1621,10 +1624,10 @@ import { RulesImporter } from './services/rules-importer'
 app.whenReady().then(async () => {
   // 初始化规则导入器
   const importer = new RulesImporter()
-  
+
   // 检查是否需要导入
   const needImport = await importer.shouldReimport()
-  
+
   if (needImport) {
     console.log('首次启动，开始导入 Cursor Rules 到数据库...')
     const stats = await importer.importLocalRules()
@@ -1632,7 +1635,7 @@ app.whenReady().then(async () => {
   } else {
     console.log('数据库已有数据，跳过导入')
   }
-  
+
   // 创建窗口等其他初始化
   createWindow()
 })
@@ -2349,13 +2352,13 @@ async function migrateJsonToSqlite() {
 // 数据来源
 const LOCAL_DATA_SOURCE = {
   directories: [
-    'src/data/rules/',      // 1062个规则文件
-    'src/data/rules-new/'   // 18个精选规则
+    'src/data/rules/', // 1062个规则文件
+    'src/data/rules-new/' // 18个精选规则
   ],
-  format: 'MDC/MD',          // Markdown with frontmatter
+  format: 'MDC/MD', // Markdown with frontmatter
   totalRules: ~1080,
-  storage: 'SQLite',         // 高性能本地数据库
-  syncRequired: false        // 不需要调用第三方API
+  storage: 'SQLite', // 高性能本地数据库
+  syncRequired: false // 不需要调用第三方API
 }
 ```
 
@@ -2384,12 +2387,12 @@ const LOCAL_DATA_SOURCE = {
 
 ## 附录：性能对比
 
-| 指标 | 本地数据+SQLite | 远程API+JSON | 说明 |
-|------|----------------|-------------|------|
-| 首次加载速度 | <100ms | 2-5s | SQLite 索引查询 vs 网络请求 |
-| 搜索性能 | <10ms | 500ms+ | FTS5 全文搜索 vs 线性扫描 |
-| 离线可用性 | ✅ | ❌ | 完全本地化 vs 依赖网络 |
-| 维护成本 | 低 | 高 | 无需维护API vs 需要监控 |
-| 数据更新 | 手动更新文件 | 自动同步 | 可控性 vs 实时性 |
+| 指标         | 本地数据+SQLite | 远程API+JSON | 说明                        |
+| ------------ | --------------- | ------------ | --------------------------- |
+| 首次加载速度 | <100ms          | 2-5s         | SQLite 索引查询 vs 网络请求 |
+| 搜索性能     | <10ms           | 500ms+       | FTS5 全文搜索 vs 线性扫描   |
+| 离线可用性   | ✅              | ❌           | 完全本地化 vs 依赖网络      |
+| 维护成本     | 低              | 高           | 无需维护API vs 需要监控     |
+| 数据更新     | 手动更新文件    | 自动同步     | 可控性 vs 实时性            |
 
 如果需要更详细的技术细节或有任何疑问，请随时反馈！
