@@ -159,6 +159,7 @@ function handleInstallFromDetails(item: MarketItem) {
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
             <Filter class="h-5 w-5" />
+            筛选
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-6">

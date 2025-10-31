@@ -28,7 +28,12 @@ export class RulesManager {
     const installPath = this.resolveInstallPath(config.targetPath, config.installType)
 
     // 写入规则文件并获取实际文件路径
-    const actualFilePath = await this.writeRuleFile(installPath, config.installType, rule.content)
+    const actualFilePath = await this.writeRuleFile(
+      installPath,
+      config.installType,
+      rule.content,
+      rule.originalFileName
+    )
 
     // 记录安装信息
     this.database.recordInstallation(ruleId, actualFilePath, config.installType)
@@ -64,7 +69,8 @@ export class RulesManager {
   private async writeRuleFile(
     installPath: string,
     installType: string,
-    content: string
+    content: string,
+    originalFileName?: string
   ): Promise<string> {
     if (installType === 'project') {
       // 项目级别：直接写入 .cursorrules 文件
@@ -73,7 +79,9 @@ export class RulesManager {
     } else {
       // 工作区/全局级别：写入 .cursor/rules/ 目录
       await fs.mkdir(installPath, { recursive: true })
-      const fileName = `rule-${Date.now()}.md`
+      
+      // 使用原始文件名，如果没有则使用默认名称
+      const fileName = originalFileName || `rule-${Date.now()}.md`
       const filePath = path.join(installPath, fileName)
       await fs.writeFile(filePath, content, 'utf-8')
       return filePath

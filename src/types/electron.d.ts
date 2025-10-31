@@ -143,6 +143,7 @@ export interface ElectronAPI {
     toggle: (installId: number, enabled: boolean) => Promise<{ success: boolean; error?: string }>
     getInstalled: () => Promise<InstalledRule[]>
     importLocalRules: () => Promise<{ success: number; failed: number }>
+    reimportAll: () => Promise<{ success: number; failed: number }>
   }
 }
 
@@ -169,6 +170,14 @@ export interface CursorRule {
   license?: string
   scope: 'project' | 'workspace' | 'global'
   globs?: string
+  // 文件类型：cursorrules 文件或 mdc 模块文件
+  fileType: 'cursorrules' | 'mdc'
+  // 父规则ID（仅用于 mdc 文件，关联到同目录的 .cursorrules）
+  parentRuleId?: number
+  // 目录路径（用于关联同一目录下的文件）
+  directoryPath?: string
+  // 原始文件名（用于安装时保留文件名）
+  originalFileName?: string
 }
 
 /**
@@ -178,6 +187,7 @@ export interface RuleSearchOptions {
   query?: string
   category?: string
   language?: string
+  fileType?: 'cursorrules' | 'mdc' | ''
   sort: 'stars' | 'updated' | 'downloads' | 'created'
   page: number
   perPage: number

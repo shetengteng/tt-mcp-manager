@@ -29,7 +29,7 @@ const menuItems = [
     path: '/'
   },
   {
-    title: '市场',
+    title: 'MCP市场',
     icon: Store,
     path: '/marketplace'
   },

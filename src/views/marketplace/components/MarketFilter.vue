@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 市场筛选器组件
+// MCP市场筛选器组件
 import { Filter } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'

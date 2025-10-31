@@ -33,6 +33,7 @@ const { toast } = useToast()
 const selectedCategory = ref('')
 const selectedSort = ref('stars')
 const selectedLanguage = ref('')
+const selectedFileType = ref('')
 
 // 对话框状态
 const showInstallDialog = ref(false)
@@ -70,6 +71,12 @@ function handleSortChange(value: string) {
 function handleLanguageChange(value: string) {
   selectedLanguage.value = value
   rulesStore.setLanguage(value)
+  handleSearch()
+}
+
+function handleFileTypeChange(value: string) {
+  selectedFileType.value = value
+  rulesStore.setFileType(value as any)
   handleSearch()
 }
 
@@ -183,12 +190,28 @@ async function selectFolder() {
                 <Label for="cat-frontend" class="font-normal cursor-pointer">前端框架</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="cat-backend" value="后端开发" />
+                <Label for="cat-backend" class="font-normal cursor-pointer">后端开发</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
                 <RadioGroupItem id="cat-lang" value="编程语言" />
                 <Label for="cat-lang" class="font-normal cursor-pointer">编程语言</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="cat-mobile" value="移动开发" />
+                <Label for="cat-mobile" class="font-normal cursor-pointer">移动开发</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="cat-database" value="数据库" />
+                <Label for="cat-database" class="font-normal cursor-pointer">数据库</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
                 <RadioGroupItem id="cat-test" value="测试" />
                 <Label for="cat-test" class="font-normal cursor-pointer">测试</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="cat-api" value="API开发" />
+                <Label for="cat-api" class="font-normal cursor-pointer">API开发</Label>
               </div>
               <div class="flex items-center space-x-2">
                 <RadioGroupItem id="cat-best" value="最佳实践" />
@@ -208,20 +231,85 @@ async function selectFolder() {
                 <Label for="lang-all" class="font-normal cursor-pointer">全部</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="lang-vue" value="Vue" />
-                <Label for="lang-vue" class="font-normal cursor-pointer">Vue</Label>
+                <RadioGroupItem id="lang-python" value="Python" />
+                <Label for="lang-python" class="font-normal cursor-pointer">Python</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-ts" value="TypeScript" />
+                <Label for="lang-ts" class="font-normal cursor-pointer">TypeScript</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-js" value="JavaScript" />
+                <Label for="lang-js" class="font-normal cursor-pointer">JavaScript</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
                 <RadioGroupItem id="lang-react" value="React" />
                 <Label for="lang-react" class="font-normal cursor-pointer">React</Label>
               </div>
               <div class="flex items-center space-x-2 mb-2">
-                <RadioGroupItem id="lang-ts" value="TypeScript" />
-                <Label for="lang-ts" class="font-normal cursor-pointer">TypeScript</Label>
+                <RadioGroupItem id="lang-vue" value="Vue" />
+                <Label for="lang-vue" class="font-normal cursor-pointer">Vue</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-nextjs" value="Next.js" />
+                <Label for="lang-nextjs" class="font-normal cursor-pointer">Next.js</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-angular" value="Angular" />
+                <Label for="lang-angular" class="font-normal cursor-pointer">Angular</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-java" value="Java" />
+                <Label for="lang-java" class="font-normal cursor-pointer">Java</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-kotlin" value="Kotlin" />
+                <Label for="lang-kotlin" class="font-normal cursor-pointer">Kotlin</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-go" value="Go" />
+                <Label for="lang-go" class="font-normal cursor-pointer">Go</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-rust" value="Rust" />
+                <Label for="lang-rust" class="font-normal cursor-pointer">Rust</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-cpp" value="C++" />
+                <Label for="lang-cpp" class="font-normal cursor-pointer">C++</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-php" value="PHP" />
+                <Label for="lang-php" class="font-normal cursor-pointer">PHP</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="lang-swift" value="Swift" />
+                <Label for="lang-swift" class="font-normal cursor-pointer">Swift</Label>
               </div>
               <div class="flex items-center space-x-2">
-                <RadioGroupItem id="lang-python" value="Python" />
-                <Label for="lang-python" class="font-normal cursor-pointer">Python</Label>
+                <RadioGroupItem id="lang-general" value="General" />
+                <Label for="lang-general" class="font-normal cursor-pointer">通用</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <Separator />
+
+          <!-- 文件类型 -->
+          <div>
+            <Label class="text-sm font-medium mb-3 block">文件类型</Label>
+            <RadioGroup :model-value="selectedFileType" @update:model-value="handleFileTypeChange">
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="type-all" value="" />
+                <Label for="type-all" class="font-normal cursor-pointer">全部</Label>
+              </div>
+              <div class="flex items-center space-x-2 mb-2">
+                <RadioGroupItem id="type-cursorrules" value="cursorrules" />
+                <Label for="type-cursorrules" class="font-normal cursor-pointer">.cursorrules</Label>
+              </div>
+              <div class="flex items-center space-x-2">
+                <RadioGroupItem id="type-mdc" value="mdc" />
+                <Label for="type-mdc" class="font-normal cursor-pointer">.mdc 模块</Label>
               </div>
             </RadioGroup>
           </div>
@@ -294,18 +382,22 @@ async function selectFolder() {
             @click="rulesStore.selectRule(rule)"
           >
             <CardHeader>
-              <div class="flex items-start gap-2 mb-3">
-                <CardTitle class="text-base leading-relaxed flex-1 min-w-0 break-normal">
-                  {{ rule.displayName }}
-                </CardTitle>
-                <div class="flex items-center gap-1 shrink-0">
-                  <Badge v-if="rule.official" variant="default" class="text-xs whitespace-nowrap">
-                    官方
-                  </Badge>
-                  <Badge variant="secondary" class="text-xs whitespace-nowrap">
-                    {{ rule.language }}
-                  </Badge>
-                </div>
+              <CardTitle class="text-base leading-relaxed mb-2">
+                {{ rule.displayName }}
+              </CardTitle>
+              <div class="flex items-center gap-1 flex-wrap mb-3">
+                <Badge v-if="rule.official" variant="default" class="text-xs whitespace-nowrap">
+                  官方
+                </Badge>
+                <Badge variant="secondary" class="text-xs whitespace-nowrap">
+                  {{ rule.language }}
+                </Badge>
+                <Badge 
+                  :variant="rule.fileType === 'cursorrules' ? 'outline' : 'default'" 
+                  class="text-xs whitespace-nowrap"
+                >
+                  {{ rule.fileType === 'cursorrules' ? '.cursorrules' : '.mdc' }}
+                </Badge>
               </div>
               <CardDescription class="line-clamp-3 text-sm leading-relaxed">
                 {{ rule.descriptionZh || rule.description }}
@@ -337,7 +429,7 @@ async function selectFolder() {
 
     <!-- 安装对话框 -->
     <Dialog v-model:open="showInstallDialog">
-      <DialogContent class="max-w-md">
+      <DialogContent class="max-w-2xl">
         <DialogHeader>
           <DialogTitle>安装 {{ currentRule?.displayName }}</DialogTitle>
           <DialogDescription>配置规则安装选项</DialogDescription>

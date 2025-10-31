@@ -8,12 +8,26 @@ import type { CursorRule, RuleFrontmatter } from '../types'
  */
 export class RulesFileParser {
   /**
-   * 解析单个 MDC/MD 文件
+   * 解析单个 MDC/MD/CURSORRULES 文件
    */
-  async parseRuleFile(filePath: string): Promise<CursorRule | null> {
+  async parseRuleFile(filePath: string, parentRuleId?: number): Promise<CursorRule | null> {
     try {
       const content = await fs.readFile(filePath, 'utf-8')
-      const fileName = path.basename(filePath, path.extname(filePath))
+      const fileName = path.basename(filePath)
+      const fileExt = path.extname(filePath)
+      const nameWithoutExt = path.basename(filePath, fileExt)
+      const directoryPath = path.dirname(filePath)
+
+      // 确定文件类型
+      let fileType: 'cursorrules' | 'mdc'
+      if (fileName === '.cursorrules') {
+        fileType = 'cursorrules'
+      } else if (fileExt === '.mdc') {
+        fileType = 'mdc'
+      } else {
+        // 不支持 md 文件
+        return null
+      }
 
       // 提取 frontmatter
       const frontmatter = this.extractFrontmatter(content)
@@ -21,16 +35,27 @@ export class RulesFileParser {
       // 提取内容（去除 frontmatter）
       const ruleContent = this.extractContent(content)
 
-      // 从文件名推断语言
-      const language = this.inferLanguage(fileName, frontmatter)
+      // 从文件名推断语言（对于 .cursorrules 文件使用目录名）
+      const dirName = path.basename(directoryPath)
+      const inferName = fileType === 'cursorrules' ? dirName : nameWithoutExt
+      const language = this.inferLanguage(inferName, frontmatter)
 
       // 从描述推断分类
-      const category = this.inferCategory(frontmatter, fileName)
+      const category = this.inferCategory(frontmatter, inferName)
+
+      // 生成唯一名称（包含目录信息以避免冲突）
+      const uniqueName = fileType === 'cursorrules' ? dirName : `${dirName}/${nameWithoutExt}`
+
+      // 生成原始文件名（用于安装时保留）
+      const originalFileName = fileType === 'cursorrules' ? '.cursorrules' : `${nameWithoutExt}.mdc`
 
       return {
         id: 0, // 数据库自动生成
-        name: fileName,
-        displayName: this.formatDisplayName(fileName),
+        name: uniqueName,
+        displayName:
+          fileType === 'cursorrules'
+            ? this.formatDisplayName(dirName)
+            : this.formatDisplayName(nameWithoutExt),
         description: frontmatter.description || '',
         descriptionZh: '', // 后续可以添加翻译
         author: frontmatter.author || 'Community',
@@ -38,7 +63,7 @@ export class RulesFileParser {
         category: category,
         tags: frontmatter.tags || this.extractTags(ruleContent),
         content: ruleContent,
-        sourceUrl: `local://src/data/rules/${path.basename(filePath)}`,
+        sourceUrl: `local://data/rules/${path.relative(process.cwd(), filePath)}`,
         stars: 0,
         downloads: 0,
         lastUpdated: new Date().toISOString(),
@@ -46,7 +71,11 @@ export class RulesFileParser {
         official: false,
         license: frontmatter.license || 'MIT',
         scope: 'project',
-        globs: frontmatter.globs
+        globs: frontmatter.globs,
+        fileType: fileType,
+        parentRuleId: parentRuleId,
+        directoryPath: directoryPath,
+        originalFileName: originalFileName
       }
     } catch (error) {
       console.error(`解析文件失败: ${filePath}`, error)
@@ -150,27 +179,112 @@ export class RulesFileParser {
     const lowerFileName = fileName.toLowerCase()
     const lowerDesc = (frontmatter.description || '').toLowerCase()
 
-    // 分类映射
+    // 前端框架
     if (
       lowerFileName.includes('react') ||
       lowerFileName.includes('vue') ||
-      lowerFileName.includes('angular')
+      lowerFileName.includes('angular') ||
+      lowerFileName.includes('svelte') ||
+      lowerFileName.includes('nextjs') ||
+      lowerFileName.includes('nuxt') ||
+      lowerFileName.includes('astro')
     ) {
       categories.push('前端框架')
     }
-    if (lowerFileName.includes('typescript') || lowerFileName.includes('javascript')) {
+
+    // 后端开发
+    if (
+      lowerFileName.includes('fastapi') ||
+      lowerFileName.includes('django') ||
+      lowerFileName.includes('flask') ||
+      lowerFileName.includes('express') ||
+      lowerFileName.includes('spring') ||
+      lowerFileName.includes('laravel') ||
+      lowerFileName.includes('ktor') ||
+      lowerFileName.includes('backend') ||
+      lowerFileName.includes('server') ||
+      lowerDesc.includes('backend') ||
+      lowerDesc.includes('server')
+    ) {
+      categories.push('后端开发')
+    }
+
+    // 编程语言
+    if (
+      lowerFileName.includes('typescript') ||
+      lowerFileName.includes('javascript') ||
+      lowerFileName.includes('python') ||
+      lowerFileName.includes('java') ||
+      lowerFileName.includes('kotlin') ||
+      lowerFileName.includes('rust') ||
+      lowerFileName.includes('cpp') ||
+      lowerFileName.includes('csharp') ||
+      lowerFileName.includes('php') ||
+      lowerFileName.includes('ruby') ||
+      lowerFileName.includes('swift')
+    ) {
       categories.push('编程语言')
     }
-    if (lowerFileName.includes('test') || lowerDesc.includes('test')) {
-      categories.push('测试')
+
+    // 移动开发
+    if (
+      lowerFileName.includes('android') ||
+      lowerFileName.includes('ios') ||
+      lowerFileName.includes('mobile') ||
+      lowerFileName.includes('swift') ||
+      lowerFileName.includes('kotlin') ||
+      lowerFileName.includes('react-native') ||
+      lowerFileName.includes('flutter') ||
+      lowerDesc.includes('mobile') ||
+      lowerDesc.includes('android') ||
+      lowerDesc.includes('ios')
+    ) {
+      categories.push('移动开发')
     }
-    if (lowerFileName.includes('database') || lowerDesc.includes('database')) {
+
+    // 数据库
+    if (
+      lowerFileName.includes('database') ||
+      lowerFileName.includes('sql') ||
+      lowerFileName.includes('mongodb') ||
+      lowerFileName.includes('postgres') ||
+      lowerFileName.includes('mysql') ||
+      lowerDesc.includes('database') ||
+      lowerDesc.includes('sql')
+    ) {
       categories.push('数据库')
     }
-    if (lowerFileName.includes('api') || lowerDesc.includes('api')) {
+
+    // 测试
+    if (
+      lowerFileName.includes('test') ||
+      lowerFileName.includes('cypress') ||
+      lowerFileName.includes('jest') ||
+      lowerFileName.includes('vitest') ||
+      lowerDesc.includes('test')
+    ) {
+      categories.push('测试')
+    }
+
+    // API开发
+    if (
+      lowerFileName.includes('api') ||
+      lowerFileName.includes('rest') ||
+      lowerFileName.includes('graphql') ||
+      lowerDesc.includes('api')
+    ) {
       categories.push('API开发')
     }
-    if (lowerFileName.includes('clean') || lowerDesc.includes('best practice')) {
+
+    // 最佳实践
+    if (
+      lowerFileName.includes('clean') ||
+      lowerFileName.includes('quality') ||
+      lowerFileName.includes('best-practice') ||
+      lowerFileName.includes('guidelines') ||
+      lowerDesc.includes('best practice') ||
+      lowerDesc.includes('guidelines')
+    ) {
       categories.push('最佳实践')
     }
 
@@ -209,6 +323,11 @@ export class RulesFileParser {
    */
   async parseRulesDirectory(directoryPath: string): Promise<CursorRule[]> {
     const rules: CursorRule[] = []
+    // 用于记录每个目录的 cursorrules 规则ID（临时记录，用于关联）
+    const directoryRuleMap = new Map<string, { name: string; index: number }>()
+
+    // 第一遍：收集所有文件
+    const allFiles: Array<{ path: string; dir: string; name: string }> = []
 
     const walkDirectory = async (dir: string) => {
       const entries = await fs.readdir(dir, { withFileTypes: true })
@@ -218,16 +337,52 @@ export class RulesFileParser {
 
         if (entry.isDirectory()) {
           await walkDirectory(fullPath)
-        } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdc')) {
-          const rule = await this.parseRuleFile(fullPath)
-          if (rule) {
-            rules.push(rule)
-          }
+        } else if (entry.name === '.cursorrules' || entry.name.endsWith('.mdc')) {
+          allFiles.push({
+            path: fullPath,
+            dir: dir,
+            name: entry.name
+          })
         }
       }
     }
 
     await walkDirectory(directoryPath)
+
+    // 第二遍：先解析 .cursorrules 文件
+    for (const file of allFiles) {
+      if (file.name === '.cursorrules') {
+        const rule = await this.parseRuleFile(file.path)
+        if (rule) {
+          rules.push(rule)
+          // 记录该目录的 cursorrules 规则（使用规则在数组中的索引）
+          directoryRuleMap.set(file.dir, {
+            name: rule.name,
+            index: rules.length - 1
+          })
+        }
+      }
+    }
+
+    // 第三遍：解析其他文件（.mdc 和 .md）
+    for (const file of allFiles) {
+      if (file.name !== '.cursorrules') {
+        // 查找该目录是否有对应的 .cursorrules
+        const parentInfo = directoryRuleMap.get(file.dir)
+
+        const rule = await this.parseRuleFile(file.path)
+        if (rule) {
+          // 如果有父规则，先记录父规则的名称（稍后需要通过名称查找ID）
+          if (parentInfo) {
+            rule.parentRuleId = 0 // 临时标记，表示需要关联
+            // 将父规则名称存储在 sourceUrl 中（临时方案）
+            rule.sourceUrl = `${rule.sourceUrl}|parent:${parentInfo.name}`
+          }
+          rules.push(rule)
+        }
+      }
+    }
+
     return rules
   }
 }

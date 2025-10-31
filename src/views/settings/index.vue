@@ -28,6 +28,9 @@ const syncStatus = ref({
 })
 const syncing = ref(false)
 
+// 规则刷新状态
+const refreshingRules = ref(false)
+
 onMounted(async () => {
   await settingsStore.loadSettings()
   await loadSyncStatus()
@@ -36,15 +39,13 @@ onMounted(async () => {
 // 加载同步状态
 async function loadSyncStatus() {
   try {
-    const result = await window.electronAPI.invoke('marketplace:sync-status')
-    if (result.success && result.data) {
-      syncStatus.value = result.data
-
-      // 格式化时间显示
-      if (syncStatus.value.lastSync !== 'Never') {
-        const lastSyncDate = new Date(syncStatus.value.lastSync)
-        syncStatus.value.lastSync = lastSyncDate.toLocaleString('zh-CN')
-      }
+    // TODO: 实现同步状态 API
+    // const result = await window.electronAPI.marketplace.getSyncStatus()
+    // 暂时使用默认值
+    syncStatus.value = {
+      lastSync: '暂未同步',
+      serverCount: 0,
+      syncing: false
     }
   } catch (error: any) {
     console.error('加载同步状态失败:', error)
@@ -55,24 +56,16 @@ async function loadSyncStatus() {
 async function handleManualSync() {
   syncing.value = true
   try {
-    const result = await window.electronAPI.invoke('marketplace:sync')
-
-    if (result.success) {
-      toast({
-        title: '同步成功！',
-        description: `成功同步 ${result.count} 个 MCP 服务器`,
-        duration: 3000
-      })
-      // 重新加载同步状态
-      await loadSyncStatus()
-    } else {
-      toast({
-        title: '同步失败',
-        description: result.error || '同步过程中发生错误',
-        variant: 'destructive',
-        duration: 3000
-      })
-    }
+    // TODO: 实现市场同步 API
+    // const result = await window.electronAPI.marketplace.sync()
+    
+    toast({
+      title: '功能开发中',
+      description: '市场数据同步功能正在开发中',
+      duration: 3000
+    })
+    
+    await loadSyncStatus()
   } catch (error: any) {
     toast({
       title: '同步失败',
@@ -121,6 +114,38 @@ async function handleSelectFolder() {
       variant: 'destructive',
       duration: 3000
     })
+  }
+}
+
+// 重新刷新 Cursor Rules 数据库
+async function handleRefreshRules() {
+  refreshingRules.value = true
+  try {
+    const result = await window.electronAPI.rules.reimportAll()
+
+    if (result.success > 0) {
+      toast({
+        title: '刷新成功！',
+        description: `成功导入 ${result.success} 条规则${result.failed > 0 ? `，${result.failed} 条失败` : ''}`,
+        duration: 3000
+      })
+    } else {
+      toast({
+        title: '刷新失败',
+        description: result.failed > 0 ? `${result.failed} 条规则导入失败` : '没有规则被导入',
+        variant: 'destructive',
+        duration: 3000
+      })
+    }
+  } catch (error: any) {
+    toast({
+      title: '刷新失败',
+      description: error.message || '刷新规则数据库时发生错误',
+      variant: 'destructive',
+      duration: 3000
+    })
+  } finally {
+    refreshingRules.value = false
   }
 }
 </script>
@@ -267,6 +292,44 @@ async function handleSelectFolder() {
             </Button>
             <p class="text-xs text-muted-foreground">
               💡 提示：应用会每 6 小时自动同步一次市场数据，您也可以手动触发同步
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Cursor Rules 数据管理 -->
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Database class="h-5 w-5" />
+            Cursor Rules 数据管理
+          </CardTitle>
+          <CardDescription>管理本地 Cursor Rules 规则数据库</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="space-y-2">
+            <p class="text-sm text-muted-foreground">
+              重新扫描并导入 data/rules 目录中的所有规则文件（包括 .cursorrules 和 .mdc 文件）
+            </p>
+            <p class="text-sm text-muted-foreground">
+              此操作会清空现有数据库并重新导入所有规则，支持最新的文件类型分类功能。
+            </p>
+          </div>
+
+          <Separator />
+
+          <div class="space-y-2">
+            <Button
+              :disabled="refreshingRules"
+              variant="outline"
+              class="w-full sm:w-auto"
+              @click="handleRefreshRules"
+            >
+              <RefreshCw class="h-4 w-4 mr-2" :class="{ 'animate-spin': refreshingRules }" />
+              {{ refreshingRules ? '刷新中...' : '重新刷新规则数据库' }}
+            </Button>
+            <p class="text-xs text-muted-foreground">
+              ⚠️ 注意：此操作会清空已安装规则的记录，但不会删除已安装的规则文件
             </p>
           </div>
         </CardContent>

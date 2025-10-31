@@ -81,6 +81,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     toggle: (installId: number, enabled: boolean) =>
       ipcRenderer.invoke('rules:toggle', installId, enabled),
     getInstalled: () => ipcRenderer.invoke('rules:getInstalled'),
-    importLocalRules: () => ipcRenderer.invoke('rules:importLocalRules')
+    importLocalRules: () => ipcRenderer.invoke('rules:importLocalRules'),
+    reimportAll: () => ipcRenderer.invoke('rules:reimportAll')
   }
 })

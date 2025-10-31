@@ -25,6 +25,7 @@ export const useRulesStore = defineStore('rules', () => {
     query: '',
     category: '',
     language: '',
+    fileType: '',
     sort: 'stars',
     page: 1,
     perPage: 30
@@ -183,6 +184,13 @@ export const useRulesStore = defineStore('rules', () => {
     searchOptions.value.sort = sort
   }
 
+  /**
+   * 设置文件类型
+   */
+  function setFileType(fileType: 'cursorrules' | 'mdc' | '') {
+    searchOptions.value.fileType = fileType
+  }
+
   return {
     // 状态
     items,
@@ -205,6 +213,7 @@ export const useRulesStore = defineStore('rules', () => {
     setSearchQuery,
     setCategory,
     setLanguage,
-    setSort
+    setSort,
+    setFileType
   }
 })

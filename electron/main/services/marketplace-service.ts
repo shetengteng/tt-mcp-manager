@@ -42,8 +42,8 @@ export class MarketplaceService {
     try {
       // 在开发环境和生产环境中使用不同的路径
       const dataPath = app.isPackaged
-        ? path.join(process.resourcesPath, 'src', 'data', 'mcp-servers.json')
-        : path.join(app.getAppPath(), 'src', 'data', 'mcp-servers.json')
+        ? path.join(process.resourcesPath, 'data', 'mcp-servers.json')
+        : path.join(app.getAppPath(), 'data', 'mcp-servers.json')
 
       const content = await fs.readFile(dataPath, 'utf-8')
       this.mcpServersData = JSON.parse(content)

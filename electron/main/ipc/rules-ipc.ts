@@ -99,5 +99,23 @@ export function registerRulesIPC() {
     }
   })
 
+  /**
+   * 重新导入所有规则（清空数据库后重新导入）
+   */
+  ipcMain.handle('rules:reimportAll', async () => {
+    try {
+      console.log('开始重新导入所有规则...')
+      // 清空数据库
+      database.clearAllRules()
+      // 重新导入
+      const result = await importer.importLocalRules()
+      console.log(`重新导入完成：成功 ${result.success} 条，失败 ${result.failed} 条`)
+      return result
+    } catch (error: any) {
+      console.error('重新导入规则失败:', error)
+      return { success: 0, failed: 0 }
+    }
+  })
+
   console.log('✓ Rules IPC handlers registered')
 }

@@ -40,13 +40,21 @@ export class RulesDatabase {
         license TEXT,
         scope TEXT DEFAULT 'project',
         globs TEXT,
+        file_type TEXT DEFAULT 'md',
+        parent_rule_id INTEGER,
+        directory_path TEXT,
+        original_file_name TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_rule_id) REFERENCES cursor_rules(id) ON DELETE CASCADE
       );
 
       CREATE INDEX IF NOT EXISTS idx_rules_name ON cursor_rules(name);
       CREATE INDEX IF NOT EXISTS idx_rules_language ON cursor_rules(language);
       CREATE INDEX IF NOT EXISTS idx_rules_stars ON cursor_rules(stars DESC);
+      CREATE INDEX IF NOT EXISTS idx_rules_file_type ON cursor_rules(file_type);
+      CREATE INDEX IF NOT EXISTS idx_rules_parent ON cursor_rules(parent_rule_id);
+      CREATE INDEX IF NOT EXISTS idx_rules_directory ON cursor_rules(directory_path);
 
       -- 分类表
       CREATE TABLE IF NOT EXISTS rule_categories (
@@ -100,8 +108,8 @@ export class RulesDatabase {
       INSERT INTO cursor_rules (
         name, display_name, description, description_zh, author, language,
         content, source_url, stars, downloads, last_updated, version,
-        official, license, scope, globs, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        official, license, scope, globs, file_type, parent_rule_id, directory_path, original_file_name, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       ON CONFLICT(name) DO UPDATE SET
         display_name = excluded.display_name,
         description = excluded.description,
@@ -111,6 +119,10 @@ export class RulesDatabase {
         downloads = excluded.downloads,
         last_updated = excluded.last_updated,
         version = excluded.version,
+        file_type = excluded.file_type,
+        parent_rule_id = excluded.parent_rule_id,
+        directory_path = excluded.directory_path,
+        original_file_name = excluded.original_file_name,
         updated_at = CURRENT_TIMESTAMP
     `)
 
@@ -130,7 +142,11 @@ export class RulesDatabase {
       rule.official ? 1 : 0,
       rule.license || 'MIT',
       rule.scope,
-      rule.globs || ''
+      rule.globs || '',
+      rule.fileType || 'mdc',
+      rule.parentRuleId || null,
+      rule.directoryPath || null,
+      rule.originalFileName || null
     )
 
     const ruleId = info.lastInsertRowid as number
@@ -224,6 +240,7 @@ export class RulesDatabase {
       query = '',
       category = '',
       language = '',
+      fileType = '',
       sort = 'stars',
       page = 1,
       perPage = 30
@@ -256,6 +273,12 @@ export class RulesDatabase {
     if (language) {
       conditions.push(`r.language = ?`)
       params.push(language)
+    }
+
+    // 文件类型筛选
+    if (fileType) {
+      conditions.push(`r.file_type = ?`)
+      params.push(fileType)
     }
 
     if (conditions.length > 0) {
@@ -324,6 +347,17 @@ export class RulesDatabase {
   }
 
   /**
+   * 根据名称获取规则
+   */
+  getRuleByName(name: string): CursorRule | null {
+    const rule = this.db.prepare('SELECT * FROM cursor_rules WHERE name = ?').get(name) as any
+
+    if (!rule) return null
+
+    return this.rowToRule(rule)
+  }
+
+  /**
    * 数据库行转换为 CursorRule 对象
    */
   private rowToRule(row: any): CursorRule {
@@ -370,7 +404,11 @@ export class RulesDatabase {
       official: row.official === 1,
       license: row.license,
       scope: row.scope || 'project',
-      globs: row.globs
+      globs: row.globs,
+      fileType: row.file_type || 'mdc',
+      parentRuleId: row.parent_rule_id || undefined,
+      directoryPath: row.directory_path || undefined,
+      originalFileName: row.original_file_name || undefined
     }
   }
 
@@ -440,6 +478,26 @@ export class RulesDatabase {
     this.db
       .prepare('UPDATE installed_rules SET enabled = ? WHERE id = ?')
       .run(enabled ? 1 : 0, installId)
+  }
+
+  /**
+   * 清空所有规则数据并重建表结构
+   */
+  clearAllRules() {
+    // 删除所有表（这样会自动重建包含新字段的表结构）
+    this.db.exec(`
+      DROP TABLE IF EXISTS rule_tag_mappings;
+      DROP TABLE IF EXISTS rule_category_mappings;
+      DROP TABLE IF EXISTS installed_rules;
+      DROP TABLE IF EXISTS cursor_rules;
+      DROP TABLE IF EXISTS rule_tags;
+      DROP TABLE IF EXISTS rule_categories;
+    `)
+    console.log('✓ 已清空所有规则数据，重建表结构...')
+    
+    // 重新初始化表结构
+    this.initDatabase()
+    console.log('✓ 表结构重建完成')
   }
 
   /**
