@@ -95,7 +95,7 @@ async function handleCopy() {
           <ul class="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
             <li>配置已包含工作目录（cwd）和环境变量（env）</li>
             <li>路径中的 ~ 已自动展开为实际路径</li>
-            <li>确保所有服务器在 MCP Manager 中已成功启动</li>
+            <li>确保所有服务器在 Cursor Helper 中已成功启动</li>
             <li>如有 API 密钥等敏感信息，请检查 env 字段</li>
           </ul>
         </div>

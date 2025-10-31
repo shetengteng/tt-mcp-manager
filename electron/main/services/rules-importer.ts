@@ -58,7 +58,7 @@ export class RulesImporter {
       const parentRules = uniqueRules.filter(
         rule => rule.fileType === 'cursorrules' || !rule.sourceUrl.includes('|parent:')
       )
-      
+
       // 先插入父规则
       for (const rule of parentRules) {
         // 清理 sourceUrl（移除临时标记）
@@ -67,9 +67,9 @@ export class RulesImporter {
         }
         this.database.upsertRule(rule)
       }
-      
+
       console.log(`✓ 第一步：导入 ${parentRules.length} 条父规则`)
-      
+
       // 输出一些示例数据用于调试
       if (parentRules.length > 0) {
         const sample = parentRules[0]
@@ -82,7 +82,7 @@ export class RulesImporter {
 
       // 第二步：导入子规则并建立关联
       const childRules = uniqueRules.filter(rule => rule.sourceUrl.includes('|parent:'))
-      
+
       for (const rule of childRules) {
         // 从 sourceUrl 中提取父规则名称
         const [cleanUrl, parentName] = rule.sourceUrl.split('|parent:')

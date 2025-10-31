@@ -494,7 +494,7 @@ export class RulesDatabase {
       DROP TABLE IF EXISTS rule_categories;
     `)
     console.log('✓ 已清空所有规则数据，重建表结构...')
-    
+
     // 重新初始化表结构
     this.initDatabase()
     console.log('✓ 表结构重建完成')

@@ -69,7 +69,7 @@ async function handleExportConfig() {
         快速操作
       </CardTitle>
       <CardDescription>
-        快速开始使用 MCP Manager
+        快速开始使用 Cursor Helper
       </CardDescription>
     </CardHeader>
     <CardContent class="flex gap-4 flex-wrap">

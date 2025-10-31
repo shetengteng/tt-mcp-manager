@@ -305,7 +305,9 @@ async function selectFolder() {
               </div>
               <div class="flex items-center space-x-2 mb-2">
                 <RadioGroupItem id="type-cursorrules" value="cursorrules" />
-                <Label for="type-cursorrules" class="font-normal cursor-pointer">.cursorrules</Label>
+                <Label for="type-cursorrules" class="font-normal cursor-pointer"
+                  >.cursorrules</Label
+                >
               </div>
               <div class="flex items-center space-x-2">
                 <RadioGroupItem id="type-mdc" value="mdc" />
@@ -392,8 +394,8 @@ async function selectFolder() {
                 <Badge variant="secondary" class="text-xs whitespace-nowrap">
                   {{ rule.language }}
                 </Badge>
-                <Badge 
-                  :variant="rule.fileType === 'cursorrules' ? 'outline' : 'default'" 
+                <Badge
+                  :variant="rule.fileType === 'cursorrules' ? 'outline' : 'default'"
                   class="text-xs whitespace-nowrap"
                 >
                   {{ rule.fileType === 'cursorrules' ? '.cursorrules' : '.mdc' }}

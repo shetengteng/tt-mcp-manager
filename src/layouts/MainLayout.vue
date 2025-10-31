@@ -82,8 +82,8 @@ const navigateTo = (path: string) => {
                 <div
                   class="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden"
                 >
-                  <span class="font-semibold">MCP Manager</span>
-                  <span class="text-xs text-muted-foreground">服务器管理工具</span>
+                  <span class="font-semibold">Cursor Helper</span>
+                  <span class="text-xs text-muted-foreground">智能开发助手</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -127,7 +127,7 @@ const navigateTo = (path: string) => {
     <!-- 主内容区域 -->
     <SidebarInset class="flex h-screen flex-col">
       <!-- 顶部导航栏 -->
-      <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6 border-b">
+      <header class="flex h-14 shrink-0 items-center gap-4 bg-background px-6">
         <div class="flex flex-1 items-center justify-between">
           <div class="flex items-center gap-2">
             <SidebarTrigger class="border-none" />

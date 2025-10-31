@@ -163,7 +163,7 @@ async function handleRefreshRules() {
           <div class="flex items-center justify-between">
             <div class="space-y-0.5">
               <Label for="auto-start">开机时自动启动</Label>
-              <p class="text-sm text-muted-foreground">系统启动时自动运行 MCP Manager</p>
+              <p class="text-sm text-muted-foreground">系统启动时自动运行 Cursor Helper</p>
             </div>
             <Switch id="auto-start" v-model:checked="settingsStore.settings.autoStart" />
           </div>
@@ -352,7 +352,7 @@ async function handleRefreshRules() {
       <!-- 关于 -->
       <Card>
         <CardHeader>
-          <CardTitle>关于 MCP Manager</CardTitle>
+          <CardTitle>关于 Cursor Helper</CardTitle>
         </CardHeader>
         <CardContent class="space-y-4">
           <div>
